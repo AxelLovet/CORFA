@@ -733,7 +733,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Arythmies cardiaques, hémorragie cérébrale, OAP. Traitement : Labétalol (effets α et β-bloquants).'
   },
   {
-    id: 'amiodarone', name: 'Amiodarone', commercial: 'Cordarone® 150 mg/3 mL',
+    id: 'amiodarone', name: 'Amiodarone', commercial: 'Cordarone® 150 mg/3 mL (= 50 mg/mL)',
     classe: 'Antiarythmique classe III', cat: 'cardiaque',
     algos: ['ACR non traumatique', 'ACR traumatique', 'Troubles du rythme'],
     forme: 'Cordarone® 150 mg/3 mL (= 50 mg/mL)',
@@ -771,7 +771,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Syndrome anticholinergique : tachycardie, mydriase, rétention urinaire, hallucinations, hyperthermie. Antidote : physostigmine (usage hospitalier).'
   },
   {
-    id: 'adenosine', name: 'Adénosine', commercial: 'Adenocor® 6 mg/2 mL',
+    id: 'adenosine', name: 'Adénosine', commercial: 'Krénosin® 6 mg/2 mL',
     classe: 'Antiarythmique — agent de freinage nodal', cat: 'cardiaque',
     algos: ['Troubles du rythme (TSV à QRS fins)'],
     forme: 'Adenocor® 6 mg/2 mL',
@@ -789,7 +789,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Bradycardie prolongée, BAV. Traitement : aminophylline IV (antagoniste).'
   },
   {
-    id: 'labetalol', name: 'Labétalol', commercial: 'Trandate® 5 mg/mL',
+    id: 'labetalol', name: 'Labétalol', commercial: 'Trandate® 100 mg/20 mL (= 5 mg/mL)',
     classe: 'Alpha et bêta-bloquant', cat: 'cardiaque',
     algos: ['Déficit neurologique focal (AVC — HTA)', 'Prééclampsie / Éclampsie'],
     forme: 'Trandate® 5 mg/mL amp 20 mL (= 100 mg)',
@@ -806,7 +806,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Bradycardie sévère, hypotension, bronchospasme. Antidote : Glucagon 1 mg IV, atropine, isoprénaline.'
   },
   {
-    id: 'lidocaine', name: 'Lidocaïne', commercial: 'Xylocaïne® 2%',
+    id: 'lidocaine', name: 'Lidocaïne', commercial: 'Lidocaïne 1%® 10 mg/mL amp 10 mL',
     classe: 'Antiarythmique classe Ib / anesthésique local', cat: 'cardiaque',
     algos: ['ACR (alternative amiodarone)', 'Troubles du rythme'],
     forme: 'Xylocaïne® 20 mg/mL (2%) amp 5 mL / 10 mL',
@@ -824,7 +824,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Convulsions, dépression cardiaque, coma. Traitement symptomatique + intralipide 20%.'
   },
   {
-    id: 'noradrenaline', name: 'Noradrénaline', commercial: 'Norepinephrine®',
+    id: 'noradrenaline', name: 'Noradrénaline', commercial: 'Noradrénaline Sintetica® 0.1 mg/mL (= 100 µg/mL) fiole 50 mL',
     classe: 'Catécholamine — vasopresseur', cat: 'cardiaque',
     algos: ['État de choc (vasopresseur)', 'Retour à la circulation spontanée'],
     forme: 'Noradrénaline 1 mg/mL amp 4 mL / 8 mL',
@@ -842,7 +842,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'HTA sévère, ischémie. Arrêter la perfusion.'
   },
   {
-    id: 'nitroglycérine', name: 'Nitroglycérine', commercial: 'Nitrolingual® spray, Nitroderm®',
+    id: 'nitroglycérine', name: 'Nitroglycérine', commercial: 'Isoket spray® (dinitrate isosorbide) 1.25 mg/dose\nNitroglycerin Streuli® cpr 0.8 mg\nPerlinganit® IV amp 10 mg/10 mL',
     classe: 'Dérivé nitré — vasodilatateur', cat: 'cardiaque',
     algos: ['Douleurs thoraciques (SCA)', 'Troubles respiratoires (OAP)'],
     forme: 'Nitrolingual® spray sublingual 0.4 mg/dose\nNitro-Dur® patch\nNitro® 10 mg/10 mL amp IV',
@@ -859,7 +859,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Hypotension sévère, tachycardie, syncope. Position déclive, remplissage, atropine si bradycardie.'
   },
   {
-    id: 'aas', name: 'Acide Acétylsalicylique (AAS)', commercial: 'Aspirin®, Aspégic®',
+    id: 'aas', name: 'Acide Acétylsalicylique (AAS)', commercial: 'Aspégic® pdr 100 mg, 500 mg, 1000 mg\nAspirin® cpr 500 mg\nAcide acétylsalicylique® IV 500 mg',
     classe: 'AINS — Antiagrégant plaquettaire / Analgésique palier 1', cat: 'cardiaque',
     algos: ['Douleurs thoraciques (SCA)', 'Retour à la circulation spontanée'],
     forme: 'Aspégic® pdr 100 mg, 500 mg, 1000 mg\nAspirine® cpr 500 mg\nAcide acétylsalicylique amp IV 500 mg',
@@ -875,7 +875,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Intoxication modérée : nausées, céphalées, vertiges, acouphènes. Sévère : confusion, hyperthermie, hyperventilation, coma. Intoxication grave si > 300 mg/kg.'
   },
   {
-    id: 'acide-tranexamique', name: 'Acide Tranexamique (TXA)', commercial: 'Tranexam®, Cyklokapron®',
+    id: 'acide-tranexamique', name: 'Acide Tranexamique (TXA)', commercial: 'Tranexam® sol inj 500 mg/5 mL ou 1000 mg/10 mL',
     classe: 'Antifibrinolytique', cat: 'hemostase',
     algos: ['État de choc traumatique', 'ACR traumatique', 'Hémorragie post-partum primaire'],
     forme: 'Tranexam® 500 mg/5 mL amp\nCyklokapron® 500 mg/5 mL',
@@ -894,7 +894,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Convulsions (surdosage massif). Traitement symptomatique.'
   },
   {
-    id: 'heparine', name: 'Héparine Non Fractionnée (HNF)', commercial: 'Liquemine®, Heparin®',
+    id: 'heparine', name: 'Héparine Non Fractionnée (HNF)', commercial: 'Héparine Bichsel®, Liquémine® sol inj 500 UI/5 mL, 20000 UI/20 mL',
     classe: 'Anticoagulant', cat: 'hemostase',
     algos: ['Douleurs thoraciques (STEMI — selon protocole)'],
     forme: 'Héparine sodique 5 000 UI/mL amp\n25 000 UI/5 mL amp',
@@ -910,7 +910,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Saignements. Antidote : Protamine sulfate 1 mg/100 UI d\'héparine.'
   },
   {
-    id: 'clopidogrel', name: 'Clopidogrel', commercial: 'Plavix® 75 mg cpr',
+    id: 'clopidogrel', name: 'Clopidogrel', commercial: 'Plavix® cpr 75 mg et 300 mg',
     classe: 'Antiagrégant plaquettaire (inhibiteur P2Y12)', cat: 'hemostase',
     algos: ['Douleurs thoraciques (SCA/STEMI) — selon protocole'],
     forme: 'Plavix® cpr 75 mg / 300 mg',
@@ -926,7 +926,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Saignements. Pas d\'antidote spécifique. Transfusion plaquettaire si nécessaire.'
   },
   {
-    id: 'prasugrel', name: 'Prasugrel', commercial: 'Efient® 10 mg / 5 mg cpr',
+    id: 'prasugrel', name: 'Prasugrel', commercial: 'Efient® cp pell 10 mg',
     classe: 'Antiagrégant plaquettaire (inhibiteur P2Y12)', cat: 'hemostase',
     algos: ['Douleurs thoraciques (STEMI) — selon protocole'],
     forme: 'Efient® cpr 10 mg / 5 mg',
@@ -943,7 +943,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== ANALGÉSIQUES / SÉDATION =====
   {
-    id: 'fentanyl', name: 'Fentanyl', commercial: 'Fentanyl® 100 mcg/2 mL',
+    id: 'fentanyl', name: 'Fentanyl', commercial: 'Fentanyl® 100 mcg/2 mL IV/IM, 500 mcg/10 mL\nDurogesic® patch 12-100 mcg/h',
     classe: 'Opioïde de synthèse — agoniste µ (analgésique central)', cat: 'analgesique',
     algos: ['Antalgie traumatique', 'Antalgie non traumatique', 'Douleurs thoraciques (SCA)', 'ISR (prémédication)'],
     forme: 'Fentanyl® 100 mcg/2 mL amp IV/IM\nFentanyl® 500 mcg/10 mL\nPenthrox® (méthoxyflurane) — voir fiche séparée',
@@ -964,7 +964,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression respiratoire, coma, bradycardie. Antidote : Naloxone (Narcan®) 0.1-0.4 mg IV/IN, à répéter.'
   },
   {
-    id: 'morphine', name: 'Morphine', commercial: 'Morphine® 10 mg/mL',
+    id: 'morphine', name: 'Morphine', commercial: 'Morphine® sol inj 2 mg/mL, 5 mg/5 mL, 10 mg/mL, 20 mg/mL, 100 mg/mL',
     classe: 'Opioïde — agoniste µ (analgésique central)', cat: 'analgesique',
     algos: ['Antalgie non traumatique (douleurs continues)'],
     forme: 'Morphine® sol inj 2 mg/mL, 5 mg/5 mL, 10 mg/mL\nMorphine® orale 10 mg/5 mL',
@@ -982,7 +982,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression respiratoire, coma, bradycardie, myosis. Antidote : Naloxone 0.1-0.4 mg IV/IN.'
   },
   {
-    id: 'naloxone', name: 'Naloxone', commercial: 'Narcan® 0.4 mg/mL',
+    id: 'naloxone', name: 'Naloxone', commercial: 'Narcan OrPha® sol inj 0.4 mg/mL',
     classe: 'Antagoniste opioïde', cat: 'analgesique',
     algos: ['Troubles de la conscience (intoxication opioïdes)', 'Troubles de la conscience pédiatrique'],
     forme: 'Narcan® 0.4 mg/mL amp 1 mL\nNarcan® nasal 4 mg/0.1 mL',
@@ -1001,7 +1001,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Pas de toxicité directe. Syndrome de sevrage si trop grande dose chez patient dépendant.'
   },
   {
-    id: 'ketamine', name: 'Kétamine', commercial: 'Ketanest® 50 mg/mL',
+    id: 'ketamine', name: 'Kétamine', commercial: 'Kétalar®, Ketamin® sol inj 10 mg/mL, 50 mg/mL',
     classe: 'Anesthésique dissociatif — antagoniste NMDA', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA ≥ 7)', 'Antalgie traumatique pédiatrique', 'ISR (induction)'],
     forme: 'Ketanest® 50 mg/mL amp 10 mL (= 500 mg)\nKetanest® 500 mg/10 mL',
@@ -1039,7 +1039,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Hépatotoxicité (12-24 h après ingestion). Antidote : N-acétylcystéine (NAC) IV. Risque vital si > 150 mg/kg sans traitement.'
   },
   {
-    id: 'ketorolac', name: 'Kétorolac', commercial: 'Tora-Dol® 30 mg/mL',
+    id: 'ketorolac', name: 'Kétorolac', commercial: 'Tora-dol® cpr pell 10 mg\nTora-dol® sol inj 30 mg/mL',
     classe: 'AINS injectable — analgésique palier 1-2', cat: 'analgesique',
     algos: ['Antalgie non traumatique (colique, douleur viscérale)'],
     forme: 'Tora-Dol® 30 mg/mL amp 1 mL',
@@ -1057,7 +1057,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Insuffisance rénale, saignements GI. Traitement symptomatique.'
   },
   {
-    id: 'meopa', name: 'MEOPA', commercial: 'Kalinox® 50/50',
+    id: 'meopa', name: 'MEOPA', commercial: 'Entonox® gaz inhal 5 L, 10 L, 20 L (O2 50% / N2O 50%)',
     classe: 'Analgésique inhalé (mélange équimolaire O2/N2O)', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA > 3 - < 6)', 'Antalgie pédiatrique traumatique'],
     forme: 'Kalinox® mélange équimolaire O2 50% / N2O 50% — bouteille avec masque et inhalateur',
@@ -1075,7 +1075,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Sédation excessive, perte de réflexes laryngés (rare — théoriquement impossible avec auto-administration). Arrêt de l\'inhalation → récupération rapide.'
   },
   {
-    id: 'methoxyflurane', name: 'Méthoxyflurane', commercial: 'Penthrox® (Sifflet vert)',
+    id: 'methoxyflurane', name: 'Méthoxyflurane', commercial: 'Penthrox® liq 99.9% — inhalateur portable',
     classe: 'Analgésique inhalé halogéné', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA > 3)'],
     forme: 'Penthrox® flacon 3 mL — inhalateur portable ("sifflet vert")',
@@ -1091,7 +1091,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Sédation profonde. Soutien respiratoire. Récupération spontanée.'
   },
   {
-    id: 'midazolam', name: 'Midazolam', commercial: 'Dormicum® 5 mg/mL',
+    id: 'midazolam', name: 'Midazolam', commercial: 'Midazolam®, Dormicum® sol inj 5 mg/5 mL, 5 mg/mL, 15 mg/3 mL',
     classe: 'Benzodiazépine — sédatif / anticonvulsivant', cat: 'analgesique',
     algos: ['Antalgie traumatique (adjuvant kétamine)', 'État d\'agitation (tranquillisation rapide)'],
     forme: 'Dormicum® 5 mg/mL amp 1 mL / 3 mL\nDormicum® 1 mg/mL amp 5 mL (pédiatrie)',
@@ -1111,7 +1111,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression respiratoire, coma. Antidote : Flumazénil 0.2 mg IV (CI si TCA co-ingérés). Soutien respiratoire.'
   },
   {
-    id: 'diazepam', name: 'Diazépam', commercial: 'Valium® 10 mg/2 mL',
+    id: 'diazepam', name: 'Diazépam', commercial: 'Valium® sol inj 10 mg/2 mL (IM/IV)\nValium® cpr 5 mg, 10 mg',
     classe: 'Benzodiazépine — anticonvulsivant / sédatif', cat: 'analgesique',
     algos: ['Convulsions', 'État d\'agitation'],
     forme: 'Valium® 10 mg/2 mL amp IV\nDiazépam gel rectal 5 mg, 10 mg, 20 mg',
@@ -1129,7 +1129,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Coma, dépression respiratoire. Antidote : Flumazénil (si pas de TCA).'
   },
   {
-    id: 'lorazepam', name: 'Lorazépam', commercial: 'Temesta® 1 mg / 2 mg',
+    id: 'lorazepam', name: 'Lorazépam', commercial: 'Lorazepam®, Temesta®, Sedazin® cpr 1 mg, 2.5 mg\nRativor® sol inj 4 mg/mL',
     classe: 'Benzodiazépine — anxiolytique / anticonvulsivant', cat: 'analgesique',
     algos: ['Convulsions', 'État d\'agitation'],
     forme: 'Temesta® cpr 1 mg / 2 mg\nLorazépam® amp 2 mg/mL (hospitalier)',
@@ -1146,7 +1146,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression respiratoire. Antidote Flumazénil.'
   },
   {
-    id: 'clonazepam', name: 'Clonazépam', commercial: 'Rivotril® 2 mg/mL',
+    id: 'clonazepam', name: 'Clonazépam', commercial: 'Rivotril® conc inj 1 mg/mL\nRivotril® cpr 0.5 mg, 2 mg',
     classe: 'Benzodiazépine — anticonvulsivant', cat: 'analgesique',
     algos: ['Convulsions'],
     forme: 'Rivotril® 2 mg/mL amp IV\nRivotril® 2 mg/mL gttes',
@@ -1164,7 +1164,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression respiratoire. Antidote : Flumazénil.'
   },
   {
-    id: 'flumazenil', name: 'Flumazénil', commercial: 'Anexate® 0.1 mg/mL',
+    id: 'flumazenil', name: 'Flumazénil', commercial: 'Anexate®, Flumazenil® 0.5 mg/5 mL',
     classe: 'Antagoniste des benzodiazépines', cat: 'analgesique',
     algos: ['Troubles de la conscience (intoxication BZD)'],
     forme: 'Anexate® 0.1 mg/mL amp 5 mL (= 0.5 mg)',
@@ -1182,7 +1182,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Convulsions (doses très élevées). Traitement symptomatique.'
   },
   {
-    id: 'butylscopolamine', name: 'Butylscopolamine', commercial: 'Buscopan® 20 mg/mL',
+    id: 'butylscopolamine', name: 'Butylscopolamine', commercial: 'Buscopan® sol inj 20 mg/mL',
     classe: 'Anticholinergique — spasmolytique', cat: 'analgesique',
     algos: ['Antalgie non traumatique (douleur en colique / spasme)'],
     forme: 'Buscopan® 20 mg/mL amp 1 mL',
@@ -1199,7 +1199,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== ANESTHÉSIE / ISR =====
   {
-    id: 'etomidate', name: 'Etomidate', commercial: 'Hypnomidate® 2 mg/mL',
+    id: 'etomidate', name: 'Etomidate', commercial: 'Etomidate Lipuro Braun® 20 mg/10 mL (= 2 mg/mL)',
     classe: 'Hypnotique d\'induction (ISR)', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR (induction)'],
     forme: 'Hypnomidate® 2 mg/mL amp 10 mL',
@@ -1217,7 +1217,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Apnée, hypotension. Soutien ventilatoire.'
   },
   {
-    id: 'suxamethonium', name: 'Suxaméthonium', commercial: 'Lysthenon® 100 mg/2 mL',
+    id: 'suxamethonium', name: 'Suxaméthonium', commercial: 'Succinolin® sol inj 100 mg/2 mL',
     classe: 'Curare dépolarisant', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR'],
     forme: 'Lysthenon® 50 mg/mL amp 2 mL',
@@ -1235,7 +1235,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Apnée prolongée. Soutien ventilatoire. Si déficit cholinestérases : ventilation prolongée.'
   },
   {
-    id: 'rocuronium', name: 'Rocuronium', commercial: 'Esmeron® 10 mg/mL',
+    id: 'rocuronium', name: 'Rocuronium', commercial: 'Esmeron®, Rocuronium® sol inj 50 mg/5 mL, 100 mg/10 mL',
     classe: 'Curare non dépolarisant', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR'],
     forme: 'Esmeron® 10 mg/mL amp 5 mL (50 mg)',
@@ -1254,7 +1254,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Apnée, paralysie prolongée. Antidote : Sugammadex 16 mg/kg IV.'
   },
   {
-    id: 'propofol', name: 'Propofol', commercial: 'Diprivan® 10 mg/mL',
+    id: 'propofol', name: 'Propofol', commercial: 'Propofol®, Disoprivan MCT® 10 mg/mL (1%) flacon 20 mL, 50 mL, 100 mL',
     classe: 'Hypnotique d\'induction et de sédation', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR (délégation médicale requise)'],
     forme: 'Diprivan® 10 mg/mL flacon 20 mL / 50 mL',
@@ -1271,7 +1271,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== RESPIRATOIRE =====
   {
-    id: 'salbutamol', name: 'Salbutamol (Albuterol)', commercial: 'Ventolin®, Sultanol®',
+    id: 'salbutamol', name: 'Salbutamol (Albuterol)', commercial: 'Salamol®, Ventolin® aéros doseur 100 mcg',
     classe: 'β2-mimétique (bronchodilatateur)', cat: 'respiratoire',
     algos: ['Troubles respiratoires (asthme)', 'Réaction anaphylactique (bronchospasme)'],
     forme: 'Ventolin® sol nébulisation 5 mg/mL\nVentolin® MDI 100 µg/dose\nVentolin® 0.5 mg/mL amp IV (usage hospitalier)',
@@ -1289,7 +1289,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Tachycardie, arythmies, hypokaliémie sévère. Traitement symptomatique.'
   },
   {
-    id: 'salbutamol-ipratropium', name: 'Salbutamol + Bromure d\'Ipratropium', commercial: 'Combivent®, Ipratropium®',
+    id: 'salbutamol-ipratropium', name: 'Salbutamol + Bromure d\'Ipratropium', commercial: 'Dospir®, Ipramol® sol inhal Salbutamol 2.5 mg + Ipratropium 0.5 mg',
     classe: 'β2-mimétique + anticholinergique bronchodilatateur', cat: 'respiratoire',
     algos: ['Troubles respiratoires (BPCO)', 'Troubles respiratoires (asthme sévère)'],
     forme: 'Combivent® nébulisation : Salbutamol 2.5 mg + Ipratropium 0.5 mg\nIPRATROPIUM Stérivent® 0.25 mg/2 mL',
@@ -1307,7 +1307,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Cf. salbutamol + syndrome anticholinergique.'
   },
   {
-    id: 'methylprednisolone', name: 'Méthylprednisolone', commercial: 'Solu-Médrol® 40 mg / 125 mg / 500 mg',
+    id: 'methylprednisolone', name: 'Méthylprednisolone', commercial: 'Dépo-Médrol® susp inj 40 mg/mL, 80 mg/2 mL\nSolu-Médrol® poudre inj 125 mg, 500 mg, 1000 mg',
     classe: 'Corticostéroïde (glucocorticoïde)', cat: 'respiratoire',
     algos: ['Troubles respiratoires (asthme, BPCO)', 'Réaction anaphylactique', 'Traumatisme médullaire (protocole spécifique)'],
     forme: 'Solu-Médrol® poudre pour sol inj : 40 mg, 125 mg, 500 mg, 1000 mg',
@@ -1327,7 +1327,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== NEUROLOGIE =====
   {
-    id: 'glucose', name: 'Glucose', commercial: 'Glucosé 30% / 40% / 5%',
+    id: 'glucose', name: 'Glucose', commercial: 'Glucose® sol inj amp 10 mL (5%, 10%, 20%, 40%)\nGlucose® sol perf 5% / 10% / 20% flacon',
     classe: 'Apport glucidique', cat: 'neuro',
     algos: ['Troubles de la conscience (hypoglycémie)', 'Retour à la circulation spontanée'],
     forme: 'Glucosé 30% amp 20 mL (= 6 g)\nGlucosé 40% flacon 250 mL\nGlucosé 5% flacon 250 mL/500 mL',
@@ -1346,7 +1346,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Hyperglycémie, diurèse osmotique, déshydratation. Insuline si nécessaire.'
   },
   {
-    id: 'glucagon', name: 'Glucagon', commercial: 'GlucaGen® 1 mg',
+    id: 'glucagon', name: 'Glucagon', commercial: 'GlucaGen HypoKit® Novo Nordisk 1 mg + solvant',
     classe: 'Hormone hyperglycémiante', cat: 'neuro',
     algos: ['Troubles de la conscience (hypoglycémie sans accès veineux)'],
     forme: 'GlucaGen® poudre 1 mg + solvant (reconstitution avant injection)',
@@ -1364,7 +1364,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Hyperglycémie, vomissements. Traitement symptomatique.'
   },
   {
-    id: 'thiamine', name: 'Thiamine', commercial: 'Bévitine® 100 mg/2 mL',
+    id: 'thiamine', name: 'Thiamine', commercial: 'Benerva® cpr 100 mg, 300 mg\nBenerva® sol inj 100 mg/mL',
     classe: 'Vitamine B1 (traitement déficit thiamine)', cat: 'neuro',
     algos: ['Troubles de la conscience (contexte malnutrition / OH chronique)'],
     forme: 'Bévitine® 100 mg/2 mL amp IV/IM',
@@ -1381,7 +1381,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== AUTRE =====
   {
-    id: 'furosemide', name: 'Furosémide', commercial: 'Lasix® 10 mg/mL',
+    id: 'furosemide', name: 'Furosémide', commercial: 'Lasix® cpr 40 mg et 500 mg\nLasix® sol inj 10 mg/mL',
     classe: 'Diurétique de l\'anse', cat: 'autre',
     algos: ['Troubles respiratoires (OAP) — si signes hypervolémie importants'],
     forme: 'Lasix® 10 mg/mL amp 2 mL (20 mg) / 4 mL (40 mg)',
@@ -1397,7 +1397,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Déshydratation, hypovolémie, hypokaliémie sévère. Réhydratation.'
   },
   {
-    id: 'esomeprazole', name: 'Ésoméprazole', commercial: 'Nexium® 40 mg / 80 mg IV',
+    id: 'esomeprazole', name: 'Ésoméprazole', commercial: 'Esomep®, Esomeprazol®, Nexium® IV 40 mg',
     classe: 'Inhibiteur de la pompe à protons (IPP)', cat: 'autre',
     algos: ['Antalgie non traumatique (brûlure épigastrique / hémorragie digestive haute)'],
     forme: 'Nexium® 40 mg / 80 mg poudre pour sol IV',
@@ -1413,7 +1413,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Peu de toxicité. Symptômes GI. Traitement symptomatique.'
   },
   {
-    id: 'nausees', name: 'Antiémétiques (Ondansétron / Dropéridol)', commercial: 'Zofran® / Xomolix®',
+    id: 'nausees', name: 'Antiémétiques (Ondansétron / Dropéridol)', commercial: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL, 8 mg/4 mL',
     classe: 'Antiémétiques (Sétron / Butyrophénone)', cat: 'autre',
     algos: ['Nausées et vomissements adulte et pédiatrique'],
     forme: 'Zofran® 2 mg/mL amp 4 mL (= 8 mg) | Ondansétron 4 mg cpr\nXomolix® (dropéridol) 2.5 mg/mL amp 1 mL',
@@ -1431,7 +1431,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dropéridol : syndrome malin neuroleptiques. Ondansétron : allongement QT / arythmies.'
   },
   {
-    id: 'droperidol', name: 'Dropéridol', commercial: 'Xomolix® 2.5 mg/mL',
+    id: 'droperidol', name: 'Dropéridol', commercial: 'Droperidol Sintetica® sol inj 1 mg/2 mL',
     classe: 'Butyrophénone — antipsychotique / tranquillisant', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide)', 'Nausées et vomissements'],
     forme: 'Xomolix® 2.5 mg/mL amp 1 mL',
@@ -1448,7 +1448,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Syndrome malin des neuroleptiques, arythmies. Traitement symptomatique, refroidissement, dantrolène (hospitalier).'
   },
   {
-    id: 'haloperidol', name: 'Halopéridol', commercial: 'Haldol® 5 mg/mL',
+    id: 'haloperidol', name: 'Halopéridol', commercial: 'Haldol® sol inj 5 mg/mL IM',
     classe: 'Antipsychotique (butyrophénone)', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide)'],
     forme: 'Haldol® 5 mg/mL amp 1 mL',
@@ -1464,7 +1464,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Dépression SNC, syndrome extrapyramidal. Traitement symptomatique.'
   },
   {
-    id: 'olanzapine', name: 'Olanzapine', commercial: 'Zyprexa® 10 mg cpr',
+    id: 'olanzapine', name: 'Olanzapine', commercial: 'Zyprexa®, Olanzapine®, Olanpax® cpr 5, 10, 15, 20 mg',
     classe: 'Antipsychotique atypique', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide PO)'],
     forme: 'Zyprexa® cpr oro-dispersible 5 mg, 10 mg, 15 mg',
@@ -1480,7 +1480,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Sédation, hypotension. Traitement symptomatique.'
   },
   {
-    id: 'sulfate-magnesium', name: 'Sulfate de Magnésium (MgSO4)', commercial: 'Magnésium sulfate 50%',
+    id: 'sulfate-magnesium', name: 'Sulfate de Magnésium (MgSO4)', commercial: 'Magnésium sulfate amp 10 mL — 10% = 1g / 20% = 2g / 50% = 5g',
     classe: 'Électrolyte / Anticonvulsivant / Antiarythmique', cat: 'autre',
     algos: ['Prééclampsie / Éclampsie', 'Troubles du rythme (torsades de pointe)', 'Asthme sévère réfractaire'],
     forme: 'MgSO4 50% amp 10 mL (= 5 g)',
@@ -1500,7 +1500,7 @@ const DEFAULT_DRUGS = [
   },
   // ===== OBSTÉTRIQUE =====
   {
-    id: 'ocytocine', name: 'Ocytocine', commercial: 'Syntocinon® 5 UI/mL',
+    id: 'ocytocine', name: 'Ocytocine', commercial: 'Syntocinon® prép inj perf 5 UI/mL',
     classe: 'Ocytocique — hormone utérotonique', cat: 'obst',
     algos: ['Accouchement (délivrance)', 'Hémorragie post-partum primaire'],
     forme: 'Syntocinon® 5 UI/mL amp 1 mL',
@@ -1516,7 +1516,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Hypertonie utérine, hypotension. Arrêt de l\'administration.'
   },
   {
-    id: 'clemastine', name: 'Clémastine', commercial: 'Tavegyl® 2 mg/2 mL',
+    id: 'clemastine', name: 'Clémastine', commercial: 'Tavegyl® sol inj 2 mg/2 mL',
     classe: 'Antihistaminique H1 de 1ère génération', cat: 'autre',
     algos: ['Réaction anaphylactique (traitement complémentaire)'],
     forme: 'Tavegyl® 2 mg/2 mL amp IV',
@@ -1534,7 +1534,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Sédation, syndrome anticholinergique. Traitement symptomatique.'
   },
   {
-    id: 'dimetindene', name: 'Dimétindène', commercial: 'Fenistil® 1 mg/mL',
+    id: 'dimetindene', name: 'Dimétindène', commercial: 'Feniallerg® gouttes 1 mg/mL\nFenistil® sol inj 4 mg/4 mL',
     classe: 'Antihistaminique H1 de 1ère génération', cat: 'autre',
     algos: ['Réaction anaphylactique / allergique (traitement complémentaire)'],
     forme: 'Fenistil® 1 mg/mL amp 4 mL (= 4 mg)',
@@ -1552,7 +1552,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Sédation, syndrome anticholinergique.'
   },
   {
-    id: 'ceftriaxone', name: 'Ceftriaxone', commercial: 'Rocéphine® 1 g / 2 g',
+    id: 'ceftriaxone', name: 'Ceftriaxone', commercial: 'Rocéphine® IV 1 g, 2 g',
     classe: 'Antibiotique (céphalosporine 3ème génération)', cat: 'autre',
     algos: ['État de choc non traumatique (distributif septique)'],
     forme: 'Rocéphine® poudre 1 g + solvant (NaCl 0.9% 10 mL)',
@@ -1570,7 +1570,7 @@ const DEFAULT_DRUGS = [
     surdosage: 'Peu de toxicité directe. Convulsions (doses très élevées). Traitement symptomatique.'
   },
   {
-    id: 'ephedrine', name: 'Éphédrine', commercial: 'Éphédrine® 3 mg/mL, 30 mg/mL',
+    id: 'ephedrine', name: 'Éphédrine', commercial: 'Éphédrine® 50 mg/10 mL, 50 mg/mL',
     classe: 'Sympathicomimétique mixte', cat: 'cardiaque',
     algos: ['Hypotension per-induction / anesthésie'],
     forme: 'Éphédrine® 3 mg/mL amp (après dilution) / 30 mg/mL amp',
