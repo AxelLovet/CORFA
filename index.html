@@ -467,6 +467,35 @@
     color: var(--text2); font-size: 13px; font-style: italic;
   }
 </style>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuaC-jsubhLTfeYCqhbXKmibkjggPXBJY",
+      authDomain: "corfa-af9e3.firebaseapp.com",
+      projectId: "corfa-af9e3",
+      storageBucket: "corfa-af9e3.firebasestorage.app",
+      messagingSenderId: "162885241085",
+      appId: "1:162885241085:web:8942c342890bf556c7d694"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Expose to global scope for use in main script
+    window._db = db;
+    window._auth = auth;
+    window._col = collection(db, 'drugs');
+    window._firestore = { collection, getDocs, setDoc, deleteDoc, doc, onSnapshot };
+    window._firebaseReady = true;
+
+    // Notify main script
+    window.dispatchEvent(new Event('firebaseReady'));
+  </script>
 </head>
 <body>
 
@@ -476,10 +505,11 @@
     <div class="logo">
       <span>CORFA</span>
       <p>Accès Administrateur</p>
+    <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:-16px;margin-bottom:12px">Connexion réservée aux administrateurs CORFA</div>
     </div>
     <div class="fieldGroup">
       <label>Identifiant</label>
-      <input type="text" id="loginUser" placeholder="Identifiant" autocomplete="username">
+      <input type="email" id="loginUser" placeholder="Email administrateur" autocomplete="email">
     </div>
     <div class="fieldGroup">
       <label>Mot de passe</label>
@@ -650,9 +680,7 @@
 </div>
 
 <script>
-// ============ AUTH ============
-const ADMIN_USER = 'CORFA';
-const ADMIN_PASS = 'CORFA';
+// ============ AUTH (Firebase Auth) ============
 let isAdmin = false;
 
 function openLoginModal() {
@@ -668,23 +696,41 @@ function closeLoginModal() {
 }
 
 function doLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value.trim();
+  const email = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
   document.getElementById('loginErr').textContent = '';
-  if (!u || !p) { document.getElementById('loginErr').textContent = 'Veuillez remplir tous les champs.'; return; }
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    isAdmin = true;
-    closeLoginModal();
-    document.getElementById('adminBadge').style.display = '';
-    document.getElementById('adminBadgeMobile').style.display = '';
-    document.getElementById('adminToggleBtn').style.display = '';
-    document.getElementById('logoutBtn').style.display = '';
-    document.getElementById('userLabel').textContent = '👤 Admin';
-    showToast('Connecté en tant qu\'Admin');
-    toggleAdmin();
-  } else {
-    document.getElementById('loginErr').textContent = 'Identifiants incorrects.';
+  if (!email || !pass) {
+    document.getElementById('loginErr').textContent = 'Veuillez remplir tous les champs.';
+    return;
   }
+  // Try Firebase Auth
+  if (window._auth) {
+    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js').then(({ signInWithEmailAndPassword }) => {
+      signInWithEmailAndPassword(window._auth, email, pass)
+        .then(() => {
+          isAdmin = true;
+          closeLoginModal();
+          setAdminUI(true);
+          showToast('Connecté en tant qu\'Admin');
+          toggleAdmin();
+        })
+        .catch(err => {
+          document.getElementById('loginErr').textContent = 'Identifiants incorrects.';
+        });
+    });
+  } else {
+    document.getElementById('loginErr').textContent = 'Firebase non disponible.';
+  }
+}
+
+function setAdminUI(on) {
+  const d = on ? '' : 'none';
+  document.getElementById('adminBadge').style.display = d;
+  document.getElementById('adminBadgeMobile').style.display = d;
+  document.getElementById('adminToggleBtn').style.display = d;
+  document.getElementById('logoutBtn').style.display = d;
+  document.getElementById('openLoginBtn').style.display = on ? 'none' : '';
+  document.getElementById('userLabel').textContent = on ? '👤 Admin' : '';
 }
 
 document.addEventListener('keydown', e => {
@@ -693,15 +739,17 @@ document.addEventListener('keydown', e => {
 });
 
 function logout() {
-  isAdmin = false;
-  document.getElementById('adminBadge').style.display = 'none';
-  document.getElementById('adminBadgeMobile').style.display = 'none';
-  document.getElementById('adminToggleBtn').style.display = 'none';
-  document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('userLabel').textContent = '';
-  document.getElementById('adminPanel').classList.remove('visible');
-  showHome();
-  showToast('Déconnecté');
+  if (window._auth) {
+    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js').then(({ signOut }) => {
+      signOut(window._auth).then(() => {
+        isAdmin = false;
+        setAdminUI(false);
+        document.getElementById('adminPanel').classList.remove('visible');
+        showHome();
+        showToast('Déconnecté');
+      });
+    });
+  }
 }
 
 // ============ DATA ============
@@ -712,19 +760,8 @@ const DEFAULT_DRUGS = [
     classe: 'Sympathicomimétique (catécholamine)', cat: 'cardiaque',
     algos: ['ACR', 'Retour à la circulation spontanée', 'Réaction anaphylactique', 'État de choc', 'Traumatisme médullaire', 'Détresse respiratoire pédiatrique'],
     forme: 'Adrénaline 5 mg/5 mL ; 1 mg/10 mL ; 10 mg/10 mL',
-    doseAdulte: [
-      { indication: 'ACR (Asystolie / FV / TV)', route: 'IV/IO', dose: '1 mg en bolus', note: 'Répéter toutes les 3-5 min' },
-      { indication: 'Choc anaphylactique', route: 'IM', dose: '0.3 – 0.5 mg', note: 'Face antéro-externe de la cuisse. Répéter aux 10 min' },
-      { indication: 'Choc anaphylactique (titration)', route: 'IV/IO', dose: '0.01 – 0.1 mg', note: 'En titration toutes les 3-5 min' },
-      { indication: 'Nébulisation (faux-croup)', route: 'NEB', dose: '1 – 3 mg', note: 'Ad 5 mL NaCl 0.9%' },
-      { indication: 'Choc septique / trouble du rythme', route: 'IV/IO', dose: '0.01 – 0.1 mg', note: 'En titration' },
-    ],
-    dosePed: [
-      { indication: 'ACR', route: 'IV/IO', dose: '0.01 mg/kg', note: 'Toutes les 3-5 min (max 1 mg)' },
-      { indication: 'Choc anaphylactique', route: 'IM', dose: '< 30 kg : 0.15 mg\n> 30 kg : 0.3 mg', note: 'Face antéro-externe de la cuisse' },
-      { indication: 'Choc anaphylactique', route: 'IV/IO', dose: '0.001 mg/kg', note: 'En titration' },
-      { indication: 'Faux-croup (nébulisation)', route: 'NEB', dose: '4 mg', note: 'Ad 5 mL NaCl 0.9%' },
-    ],
+    doseAdulte: [{indication: 'ACR (Asystolie / FV / TV)', route: 'IV/IO bolus', dose: '1 mg', note: 'Répéter toutes les 3-5 min'}, {indication: 'Trouble du rythme / État de choc septique / Traumatisme médullaire / ROSC', route: 'IV/IO', dose: 'Titration 0.01 – 0.1 mg', note: 'Toutes les 3-5 min'}, {indication: 'Choc anaphylactique', route: 'IM', dose: '0.3 – 0.5 mg', note: 'Face antéro-externe de la cuisse. Répéter aux 10 min si besoin'}, {indication: 'Choc anaphylactique (titration IV)', route: 'IV/IO', dose: '0.01 – 0.1 mg', note: 'Titration toutes les 3-5 min'}, {indication: 'Nébulisation bronchospasme anaphylactique', route: 'NEB', dose: '1 – 3 mg ad 5 mL NaCl 0.9%', note: ''}],
+    dosePed: [{indication: 'ACR', route: 'IV/IO bolus', dose: '0.01 mg/kg', note: 'Toutes les 3-5 min (max 1 mg)'}, {indication: 'Choc anaphylactique', route: 'IM', dose: '< 30 kg : 0.15 mg\n> 30 kg : 0.3 mg', note: 'Face antéro-externe de la cuisse'}, {indication: 'Choc anaphylactique (titration IV)', route: 'IV/IO', dose: '0.001 mg/kg', note: 'Titration'}, {indication: 'Faux-croup / stridor sévère (nébulisation)', route: 'NEB', dose: '4 mg ad 5 mL NaCl 0.9%', note: 'Selon algorithme détresse respiratoire pédiatrique'}],
     ci: ['Hypertension sévère', 'Glaucome à angle fermé', 'Tachycardie paroxystique', 'Coronaropathie sévère', '⚠ Ces CI sont relatives si indication vitale (ACR, anaphylaxie)'],
     se: ['Tachycardie / arythmies', 'Hypertension artérielle', 'Anxiété / agitation / tremblements', 'Hyperglycémie', 'Nausées / vomissements', 'Céphalées'],
     meca: 'Amine sympathomimétique (catécholamine) agissant sur les récepteurs α1, α2, β1, β2.\n• Cœur (β1) : inotrope+, chronotrope+, dromotrope+, bathmotrope+\n• Vasculaire (α1) : vasoconstriction périphérique → ↑ PA\n• Respiratoire (β2) : bronchodilatation puissante\n• Métabolique : ↑ glycémie (glycogénolyse)\nLa sélectivité est dose-dépendante : β2 prédominant à faibles doses, mixte α+β à doses moyennes, α prédominant à hautes doses.',
@@ -737,14 +774,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antiarythmique classe III', cat: 'cardiaque',
     algos: ['ACR non traumatique', 'ACR traumatique', 'Troubles du rythme'],
     forme: 'Cordarone® 150 mg/3 mL (= 50 mg/mL)',
-    doseAdulte: [
-      { indication: 'ACR (FV/TV sans pouls) — 1ère dose', route: 'IV/IO', dose: '300 mg', note: 'Après 3e choc' },
-      { indication: 'ACR (FV/TV sans pouls) — 2e dose', route: 'IV/IO', dose: '150 mg', note: 'Après 5e choc si nécessaire' },
-      { indication: 'Trouble du rythme (TSV, FA)', route: 'IVL', dose: '150 mg', note: 'Ad 100 mL G5%/NaCl 0.9% sur 10-15 min' },
-    ],
-    dosePed: [
-      { indication: 'FV/TV sans pouls', route: 'IV/IO', dose: '5 mg/kg', note: 'Max 3 doses' },
-    ],
+    doseAdulte: [{indication: 'ACR (FV/TV) — 1ère dose', route: 'IV/IO', dose: '300 mg bolus', note: 'Après 3e choc'}, {indication: 'ACR (FV/TV) — 2e dose', route: 'IV/IO', dose: '150 mg bolus', note: 'Après 5e choc si nécessaire'}, {indication: 'Trouble du rythme (TSV, FA)', route: 'IVL', dose: '150 mg ad 100 mL G5%/NaCl 0.9%', note: 'Sur 10-15 min'}],
+    dosePed: [{indication: 'FV/TV sans pouls', route: 'IV/IO', dose: '5 mg/kg', note: 'Max 3 doses'}],
     ci: ['⚠ CONTRE-INDICATION ABSOLUE en cas de TORSADES DE POINTE → utiliser MgSO4', 'Bradycardie sévère', 'Bloc sino-auriculaire', 'Allergie à l\'iode'],
     se: ['Hypotension (IV rapide)', 'Bradycardie', 'Allongement QT → risque torsades', 'Toxicité thyroïdienne (usage chronique)', 'Toxicité pulmonaire (usage chronique)'],
     meca: 'Bloque les canaux potassiques (Ikr) → allonge la durée du potentiel d\'action et la période réfractaire → classe III. Possède également des effets de classe I, II et IV. Vasodilatateur coronaire.',
@@ -757,12 +788,8 @@ const DEFAULT_DRUGS = [
     classe: 'Parasympatholytique (anticholinergique)', cat: 'cardiaque',
     algos: ['Troubles du rythme (bradycardie)', 'Traumatisme médullaire', 'ISR (prémédication)'],
     forme: 'Atropine® 0.5 mg/mL ou 1 mg/mL',
-    doseAdulte: [
-      { indication: 'Bradycardie symptomatique', route: 'IVB', dose: '0.5 – 1 mg', note: 'Répéter si nécessaire. Max 3 mg total. ⚠ CI BAV IIb et III → stop si ralentissement' },
-    ],
-    dosePed: [
-      { indication: 'Bradycardie', route: 'IV/IO', dose: '0.02 mg/kg', note: 'Min 0.1 mg, max 0.5 mg/dose' },
-    ],
+    doseAdulte: [{indication: 'Bradycardie symptomatique', route: 'IVD bolus', dose: '0.5 – 1 mg', note: 'Répéter si nécessaire. Max 3 mg total. ⚠ CI BAV IIb et III'}, {indication: 'Intoxication aux organophosphorés', route: 'IV', dose: '2 mg toutes les 5-10 min', note: 'Jusqu\'à disparition du syndrome muscarinique'}],
+    dosePed: [{indication: 'Bradycardie', route: 'IVD bolus', dose: '0.02 mg/kg', note: 'Min 0.1 mg / max 0.5 mg par bolus'}],
     ci: ['Glaucome à angle fermé', 'Rétention urinaire', 'Tachycardie'],
     se: ['Tachycardie (dose-dépendante)', 'Sécheresse buccale', 'Mydriase', 'Rétention urinaire', 'Confusion (sujet âgé)'],
     meca: 'Antagoniste compétitif des récepteurs muscariniques (M2 cardiaques) → bloque l\'effet vagal → ↑ FC par levée du frein parasympathique. N\'a pas d\'effet sur les blocs infranodaux.',
@@ -775,12 +802,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antiarythmique — agent de freinage nodal', cat: 'cardiaque',
     algos: ['Troubles du rythme (TSV à QRS fins)'],
     forme: 'Krénosin® 6 mg/2 mL d\'adénosine',
-    doseAdulte: [
-      { indication: 'TSV à QRS fins (régulière)', route: 'IVB', dose: '6 mg → 12 mg → 12 mg', note: 'Injection rapide en bolus, suivie de rinçage NaCl 20 mL. Intervalle 1-2 min si pas d\'effet' },
-    ],
-    dosePed: [
-      { indication: 'TSV', route: 'IVB', dose: '0.1 mg/kg', note: 'Max 6 mg. Si inefficace : 0.2 mg/kg (max 12 mg)' },
-    ],
+    doseAdulte: [{indication: 'TSV à QRS fins (régulière)', route: 'IVB', dose: '6 mg → 12 mg → 12 mg', note: 'Bolus rapide (1-2 sec) + flush 20 mL NaCl 0.9%. CVP proximal. Intervalle entre doses si sans effet'}],
+    dosePed: [],
     ci: ['BAV 2ème et 3ème degré', 'Sick sinus syndrome', 'Asthme sévère', 'BPCO sévère', 'Transplantation cardiaque récente'],
     se: ['Bouffée de chaleur (très fréquent, transitoire)', 'Dyspnée / bronchospasme', 'Douleur thoracique (transitoire)', 'Bradycardie / asystolie transitoire (quelques secondes)', 'Nausées'],
     meca: 'Agoniste des récepteurs A1 adénosine → hyperpolarise les cellules nodales → ralentit la conduction AV → interrompt les circuits de réentrée impliquant le nœud AV. Durée d\'action très courte (< 10 secondes).',
@@ -793,10 +816,7 @@ const DEFAULT_DRUGS = [
     classe: 'Alpha et bêta-bloquant', cat: 'cardiaque',
     algos: ['Déficit neurologique focal (AVC — HTA)', 'Prééclampsie / Éclampsie'],
     forme: 'Trandate® 100 mg/20 mL (= 5 mg/mL)\nTrandate® cpr 100 mg',
-    doseAdulte: [
-      { indication: 'AVC ischémique — HTA', route: 'IVL', dose: '5 mg en 1 min', note: 'Objectif TAS ~ 180 mmHg. Répéter aux 5 min selon réponse' },
-      { indication: 'Prééclampsie sévère', route: 'IVL', dose: '5 mg en 1 min', note: 'TAS cible : 130-140 mmHg. Évaluer effet MgSO4 avant' },
-    ],
+    doseAdulte: [{indication: 'AVC ischémique / Dissection aortique — HTA', route: 'IVL (> 60-120 sec)', dose: '5 – 10 mg', note: 'Répéter aux 5-10 min jusqu\'à objectif. Max 100 mg'}, {indication: 'Prééclampsie sévère', route: 'IVL (1 min)', dose: '5 mg', note: 'Répéter aux 5 min. TAS cible 130-140 mmHg'}],
     dosePed: [],
     ci: ['Asthme / BPCO sévère', 'BAV 2e et 3e degré', 'Bradycardie < 50/min', 'IC décompensée', 'Hypotension'],
     se: ['Bradycardie', 'Hypotension', 'Bronchospasme', 'Fatigue', 'Nausées'],
@@ -810,12 +830,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antiarythmique classe Ib / anesthésique local', cat: 'cardiaque',
     algos: ['ACR (alternative amiodarone)', 'Troubles du rythme'],
     forme: 'Lidocaïne 1%® 10 mg/mL — ampoule de 10 mL',
-    doseAdulte: [
-      { indication: 'ACR (FV/TV — alternative amiodarone)', route: 'IV/IO', dose: '1-1.5 mg/kg', note: 'Puis 0.5-0.75 mg/kg si nécessaire' },
-    ],
-    dosePed: [
-      { indication: 'FV/TV (alternative amiodarone)', route: 'IV/IO', dose: '1 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'ACR (FV/TV) — 1ère dose', route: 'IV/IO', dose: '1.0 – 1.5 mg/kg', note: ''}, {indication: 'ACR (FV/TV) — 2e et 3e dose', route: 'IV/IO', dose: '0.5 – 0.75 mg/kg', note: ''}],
+    dosePed: [{indication: 'ACR (FV/TV)', route: 'IV/IO', dose: '1 mg/kg dose unique', note: ''}],
     ci: ['Allergie aux anesthésiques de type amide', 'Bloc AV complet', 'Syndrome de Stokes-Adams'],
     se: ['Somnolence', 'Convulsions (surdosage)', 'Bradycardie', 'Hypotension'],
     meca: 'Bloque les canaux sodiques rapides → ralentit la dépolarisation des cellules His-Purkinje → efficace sur les arythmies ventriculaires.',
@@ -828,12 +844,8 @@ const DEFAULT_DRUGS = [
     classe: 'Catécholamine — vasopresseur', cat: 'cardiaque',
     algos: ['État de choc (vasopresseur)', 'Retour à la circulation spontanée'],
     forme: 'Noradrénaline Sintetica® 0.1 mg/mL (= 100 µg/mL) — fiole 50 mL = 5 mg',
-    doseAdulte: [
-      { indication: 'Choc distributif / septique', route: 'IV', dose: '0.01-3 µg/kg/min', note: 'Titration selon réponse hémodynamique (objectif TAM > 65 mmHg)' },
-    ],
-    dosePed: [
-      { indication: 'Choc septique', route: 'IV', dose: '0.05-2 µg/kg/min', note: 'En titration' },
-    ],
+    doseAdulte: [{indication: 'Choc distributif / septique (TAM cible > 65 mmHg)', route: 'IV PSE', dose: '0.01 – 0.1 µg/kg/min en dose initiale', note: 'Concentration 100 µg/mL : 70 kg → débuter 0.4-4.2 mL/h\n1 mL/h = 1.7 µg/min'}],
+    dosePed: [{indication: 'Choc septique', route: 'IV PSE', dose: '0.05 – 2 µg/kg/min', note: 'En titration'}],
     ci: ['Hypovolémie non corrigée', 'Ischémie vasculaire périphérique sévère'],
     se: ['Hypertension sévère', 'Bradycardie réflexe', 'Ischémie périphérique', 'Nécrose au point d\'injection (extravasation)'],
     meca: 'Agoniste α1 (vasoconstriction puissante) et β1 (inotrope+). Peu d\'effet β2. → ↑ résistances vasculaires, ↑ PA, légère ↑ FC.',
@@ -846,10 +858,7 @@ const DEFAULT_DRUGS = [
     classe: 'Dérivé nitré — vasodilatateur', cat: 'cardiaque',
     algos: ['Douleurs thoraciques (SCA)', 'Troubles respiratoires (OAP)'],
     forme: 'Isoket spray® — principe actif : dinitrate d\'isosorbide\n1 jet = 0.05 mL = 1.25 mg de dinitrate d\'isosorbide\nNitroglycerin Streuli® cpr 0.8 mg de trinitrate de glycérol\nPerlinganit® IV amp 10 mL (10 mg) et 50 mL (50 mg)',
-    doseAdulte: [
-      { indication: 'SCA / OAP — douleur EVA > 3', route: 'SL', dose: '0.4 mg (1 bouffée)', note: 'Répéter si TAS > 90 mmHg et EVA > 3. Intervalle 5 min. Max 3 doses' },
-      { indication: 'OAP sévère (dérivés nitrés IV)', route: 'IVL', dose: 'Titration selon protocole', note: 'TAS > 140 mmHg (seuil d\'utilisation)' },
-    ],
+    doseAdulte: [{indication: 'Angor / SCA (EVA > 3, TAS > 90 mmHg)', route: 'SL', dose: '1 push Isoket (1.25 mg)\nou 1 cp Nitroglycerin Streuli (0.8 mg)', note: 'Répéter toutes les 3-5 min si TAS > 90 mmHg. Max 3 prises'}, {indication: 'OAP (TAS > 140 mmHg)', route: 'SL', dose: '1 push ou 1 cp', note: 'Répéter toutes les 3-5 min si TAS > 140 mmHg'}, {indication: 'OAP sévère IV', route: 'IV (PSE)', dose: 'Perlinganit® — titration selon protocole', note: 'TAS cible selon protocole'}],
     dosePed: [],
     ci: ['TAS < 90 mmHg', 'Prise d\'inhibiteur PDE5 (sildenafil, tadalafil, vardenafil — suffixe "-afil") dans les 48 h ⚠', 'Bradycardie < 50/min', 'Sus-décalage ST en II, III, aVF (SCD) → ajouter précordiales droites, si sus-décalage > 1 mm V3R-V4R : CONTRE-INDIQUÉ'],
     se: ['Céphalées (très fréquent)', 'Hypotension', 'Tachycardie réflexe', 'Flushing', 'Syncope'],
@@ -863,9 +872,7 @@ const DEFAULT_DRUGS = [
     classe: 'AINS — Antiagrégant plaquettaire / Analgésique palier 1', cat: 'cardiaque',
     algos: ['Douleurs thoraciques (SCA)', 'Retour à la circulation spontanée'],
     forme: 'Acide acétylsalicyl 0.5 g\nAspégic® pdr 100 mg, 500 mg, 1000 mg\nAspirine® cpr 500 mg\nAspirine® cardio 100 mg',
-    doseAdulte: [
-      { indication: 'SCA / STEMI — dose de charge', route: 'IV/PO', dose: '250 mg', note: 'Préférer IV si disponible (absorption plus rapide). ESC 2023 : 150-300 mg PO ou 75-250 mg IV' },
-    ],
+    doseAdulte: [{indication: 'SCA / STEMI', route: 'IV/PO', dose: '250 mg', note: 'ESC 2023 : 150-300 mg PO ou 75-250 mg IV. Selon protocole'}],
     dosePed: [],
     ci: ['Allergie à l\'aspirine / AINS', 'Enfant < 12 ans (risque syndrome de Reye)', '⚠ < 16 ans avec fièvre / infection virale : CI sauf prescription médicale', 'Hémophilie', 'Dernier trimestre grossesse (relative)'],
     se: ['Troubles gastriques / ulcère', 'Saignements', 'Bronchospasme (aspirine-sensibilité)', 'Acouphènes (surdosage)'],
@@ -879,13 +886,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antifibrinolytique', cat: 'hemostase',
     algos: ['État de choc traumatique', 'ACR traumatique', 'Hémorragie post-partum primaire'],
     forme: 'Tranexam® sol inj 500 mg/5 mL ou 1000 mg/10 mL',
-    doseAdulte: [
-      { indication: 'Choc hémorragique traumatique', route: 'IVL/IM', dose: '> 60 kg : 1 g\n< 60 kg : 15 mg/kg', note: 'En 10 minutes (IVL). Dans les 3 heures post-traumatisme (idéalement < 1 h)' },
-      { indication: 'Hémorragie post-partum', route: 'IVL', dose: '1 g', note: 'Dans les 3 heures post-partum. Peut être répété 1x' },
-    ],
-    dosePed: [
-      { indication: 'Choc hémorragique', route: 'IVL', dose: '15 mg/kg', note: 'Sur 10 minutes' },
-    ],
+    doseAdulte: [{indication: 'Choc hémorragique traumatique (idéalement < 1h)', route: 'IVL', dose: '1 g dilué dans NaCl 0.9% 100 mL — débit libre\n(= 15 mg/kg)', note: 'CVP unique si possible. Alternative : IM possible'}, {indication: 'Hémorragie post-partum (dans les 3h)', route: 'IVL', dose: '1 g sur 10-20 min', note: 'Peut être répété 1x'}],
+    dosePed: [{indication: 'Choc hémorragique (< 12 ans)', route: 'IVL', dose: '15 mg/kg (max 1000 mg)', note: 'Dilué dans NaCl 0.9%. Dans les 3h post-traumatisme'}],
     ci: ['ATCD de convulsions (doses élevées)', 'Thrombose active', 'Hématurie d\'origine rénale haute'],
     se: ['Nausées / vomissements (IV rapide)', 'Hypotension si injection trop rapide', 'Risque thromboembolique théorique'],
     meca: 'Analogue de la lysine → inhibe la liaison du plasminogène à la fibrine → bloque la fibrinolyse → stabilise les caillots. Efficacité maximale dans l\'heure suivant le traumatisme.',
@@ -898,9 +900,7 @@ const DEFAULT_DRUGS = [
     classe: 'Anticoagulant', cat: 'hemostase',
     algos: ['Douleurs thoraciques (STEMI — selon protocole)'],
     forme: 'Héparine Bichsel®, Liquémine® sol inj\n500 UI/5 mL ; 20\'000 UI/20 mL ; 20\'000 UI/48 mL ; 25\'000 UI/5 mL',
-    doseAdulte: [
-      { indication: 'STEMI (selon procédure)', route: 'IV', dose: '60-70 UI/kg (max 5000 UI)', note: 'Selon protocole STEMI cantonal / selon médecin répondant' },
-    ],
+    doseAdulte: [{indication: 'STEMI (selon procédure)', route: 'IV bolus', dose: '60 UI/kg (max 5000 UI)', note: 'Ne pas administrer si déjà reçue ou HBPM/anticoagulant oral. Si VVP impossible : 5000 UI SC'}],
     dosePed: [],
     ci: ['Saignement actif sévère', 'Hémorragie intracrânienne', 'Thrombopénie sévère', 'Hypersensibilité à l\'héparine', 'Accident vasculaire cérébral hémorragique'],
     se: ['Saignements', 'Thrombopénie (TIH — usage prolongé)', 'Hyperkaliémie (usage prolongé)'],
@@ -914,9 +914,7 @@ const DEFAULT_DRUGS = [
     classe: 'Antiagrégant plaquettaire (inhibiteur P2Y12)', cat: 'hemostase',
     algos: ['Douleurs thoraciques (SCA/STEMI) — selon protocole'],
     forme: 'Plavix® cpr 75 mg et 300 mg',
-    doseAdulte: [
-      { indication: 'STEMI — dose de charge', route: 'PO', dose: '300-600 mg', note: 'Selon procédure STEMI ; si allergie AAS : substitution par clopidogrel' },
-    ],
+    doseAdulte: [{indication: 'STEMI ou allergie AAS — dose de charge', route: 'PO', dose: '300 mg dose unique', note: ''}],
     dosePed: [],
     ci: ['Saignement actif', 'AVC hémorragique', 'Insuffisance hépatique sévère'],
     se: ['Saignements', 'Dyspepsie', 'Diarrhée'],
@@ -930,9 +928,7 @@ const DEFAULT_DRUGS = [
     classe: 'Antiagrégant plaquettaire (inhibiteur P2Y12)', cat: 'hemostase',
     algos: ['Douleurs thoraciques (STEMI) — selon protocole'],
     forme: 'Efient® cp pell 10 mg de prasugrel',
-    doseAdulte: [
-      { indication: 'STEMI — dose de charge', route: 'PO', dose: '60 mg', note: 'Selon procédure STEMI et instruction médicale' },
-    ],
+    doseAdulte: [{indication: 'STEMI — dose de charge', route: 'PO', dose: '60 mg dose unique', note: 'Selon procédure STEMI et instruction médicale'}],
     dosePed: [],
     ci: ['Antécédent AVC / AIT', 'Âge > 75 ans (risque bénéfice défavorable)', 'Poids < 60 kg (dose réduite)', 'Saignement actif', 'Insuffisance hépatique sévère'],
     se: ['Saignements (profil hémorragique plus important que clopidogrel)', 'Rash cutané'],
@@ -947,15 +943,8 @@ const DEFAULT_DRUGS = [
     classe: 'Opioïde de synthèse — agoniste µ (analgésique central)', cat: 'analgesique',
     algos: ['Antalgie traumatique', 'Antalgie non traumatique', 'Douleurs thoraciques (SCA)', 'ISR (prémédication)'],
     forme: 'Fentanyl® 100 mcg/2 mL IV/IM ; 500 mcg/10 mL IV/IM\nDurogesic® patch 12 mcg/h, 25 mcg/h, 50 mcg/h, 75 mcg/h, 100 mcg/h\nActiq®, Effentora® cpr 200-1600 mcg',
-    doseAdulte: [
-      { indication: 'Antalgie — dose de charge', route: 'IV/IN', dose: '1 µg/kg', note: 'Puis titration par bolus de 0.25-0.5 µg/kg (poids idéal). Max 3-4 µg/kg total' },
-      { indication: 'ISR (prémédication)', route: 'IV', dose: '0.5-1.5 µg/kg', note: '3-5 min avant induction' },
-      { indication: 'SCA (antalgie)', route: 'IV/IN', dose: '1-3 µg/kg', note: 'Max 3 µg/kg. Peut retarder effets des antiagrégants oraux' },
-    ],
-    dosePed: [
-      { indication: 'Antalgie', route: 'IV/IN', dose: '1 µg/kg (dose de charge)', note: 'Puis 0.5 µg/kg. Max 3 µg/kg total' },
-      { indication: 'Intranasal (≥ 10 kg)', route: 'IN', dose: '1.5-2 µg/kg', note: 'Dose max 100 µg. Moitiés dans chaque narine' },
-    ],
+    doseAdulte: [{indication: 'Antalgie (EVA > 3)', route: 'IV/IN', dose: 'Charge : 1 µg/kg\nTitration : bolus 0.25 – 0.5 µg/kg (poids idéal)', note: 'Max 3-4 µg/kg total (HUG : max 5 µg/kg)'}, {indication: 'SCA / STEMI', route: 'IV/IN', dose: '1 – 3 µg/kg', note: 'Max 3 µg/kg'}, {indication: 'ISR (prémédication)', route: 'IV', dose: '0.5 – 1.5 µg/kg', note: ''}],
+    dosePed: [{indication: 'Antalgie', route: 'IV/IN', dose: 'Charge : 1 µg/kg\nTitration : 0.5 µg/kg', note: 'Max 3 µg/kg total'}],
     ci: ['Allergie aux opioïdes', 'FR < 10/min (adulte)', 'TAS < 90 mmHg', '⚠ Prudence si ISRS / IMAO (risque syndrome sérotoninergique)'],
     se: ['Dépression respiratoire (dose-dépendante)', 'Nausées / vomissements', 'Bradycardie', 'Rigidité thoracique (injection rapide)', 'Hypotension'],
     meca: 'Agoniste des récepteurs µ (et κ, δ) → analgésie centrale puissante. 80-100× plus puissant que la morphine. Liposolubilité élevée → passage rapide BHE.',
@@ -968,12 +957,8 @@ const DEFAULT_DRUGS = [
     classe: 'Opioïde — agoniste µ (analgésique central)', cat: 'analgesique',
     algos: ['Antalgie non traumatique (douleurs continues)'],
     forme: 'Morphine® sol inj 2 mg/mL ; 5 mg/5 mL ; 10 mg/mL ; 20 mg/mL ; 100 mg/mL\nM-retard Zentiva® cpr ret 10-200 mg\nMST Continus®, Sevre-Long® cpr ret 10-200 mg',
-    doseAdulte: [
-      { indication: 'Antalgie (douleur continue, EVA > 3)', route: 'IV', dose: '2-5 mg', note: 'Titration par bolus de 2 mg. FR > 10/min, TAS > 90 mmHg' },
-    ],
-    dosePed: [
-      { indication: 'Antalgie', route: 'IV', dose: '0.1 mg/kg', note: 'Puis titration par bolus de 0.05 mg/kg' },
-    ],
+    doseAdulte: [{indication: 'Douleur continue EVA > 3 (FR > 10/min, TAS > 90 mmHg)', route: 'IV/IN', dose: '0.1 mg/kg puis 0.05 mg/kg\nmax 0.2 mg/kg', note: 'DRS : titrer 1-2 mg, max 5-10 mg'}],
+    dosePed: [{indication: 'Antalgie', route: 'IV', dose: '0.1 mg/kg\npuis 0.05 mg/kg', note: ''}],
     ci: ['Allergie aux opioïdes', 'FR < 10/min', 'TAS < 90 mmHg', 'Insuffisance respiratoire sévère', '⚠ Prudence si ISRS / IMAO'],
     se: ['Dépression respiratoire', 'Nausées / vomissements (fréquents)', 'Bradycardie', 'Hypotension', 'Constipation', 'Myosis'],
     meca: 'Agoniste µ-opioïde central → analgésie puissante. Moins liposoluble que fentanyl → délai d\'action plus long, durée plus longue.',
@@ -986,13 +971,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antagoniste opioïde', cat: 'analgesique',
     algos: ['Troubles de la conscience (intoxication opioïdes)', 'Troubles de la conscience pédiatrique'],
     forme: 'Narcan OrPha® sol inj 0.4 mg/mL\nNyxoid® spray nasal 1.8 mg',
-    doseAdulte: [
-      { indication: 'Intoxication opioïdes — FR < 8/min', route: 'IV en titration', dose: '0.1-0.4 mg', note: 'But : FR > 8/min (pas réveil complet si dépendance). Répéter si nécessaire (demi-vie courte < opioïdes)' },
-      { indication: 'Si pas de VVP', route: 'IM/IN', dose: '0.4-2 mg', note: 'IN : moitiés dans chaque narine' },
-    ],
-    dosePed: [
-      { indication: 'Intoxication opioïdes', route: 'IV/IM/IN', dose: '0.01 mg/kg', note: 'But : réveil. Répéter si nécessaire' },
-    ],
+    doseAdulte: [{indication: 'Intoxication opioïdes — dépendance', route: 'IV bolus', dose: '0.1 mg aux 2-3 min', note: 'Objectif : FR > 8/min (pas réveil complet). Max 10 mg'}, {indication: 'Intoxication sur administration thérapeutique', route: 'IV bolus', dose: '0.04 mg', note: 'Titration prudente'}, {indication: 'Si VVP impossible', route: 'IM/IN', dose: '0.4 mg', note: 'Répéter toutes les 3-5 min. Nyxoid® spray nasal : 1.8 mg'}, {indication: 'ACR sur opiacés', route: 'IV', dose: '0.8 mg', note: 'Répétable 1x (HUG BSC 2025)'}],
+    dosePed: [{indication: 'Intoxication opioïdes', route: 'IV/IM/IN', dose: '0.01 mg/kg (max 0.2 mg)', note: 'But : réveil. Répéter si nécessaire'}],
     ci: ['Allergie à la naloxone'],
     se: ['Syndrome de sevrage aigu si dépendance (douleur, agitation, tachycardie, HTA, nausées, vomissements)', 'Tachycardie / HTA', 'Œdème pulmonaire (rare — injection rapide IV)'],
     meca: 'Antagoniste compétitif des récepteurs opioïdes µ, κ, δ → déplace les opioïdes → lève rapidement la dépression respiratoire.',
@@ -1005,14 +985,8 @@ const DEFAULT_DRUGS = [
     classe: 'Anesthésique dissociatif — antagoniste NMDA', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA ≥ 7)', 'Antalgie traumatique pédiatrique', 'ISR (induction)'],
     forme: 'Kétalar®, Ketamin® sol inj\n200 mg/20 mL ; 500 mg/10 mL ; 10 mg/mL ; 50 mg/10 mL ; 100 mg/100 mL',
-    doseAdulte: [
-      { indication: 'Antalgie (EVA ≥ 7)', route: 'IVL/IM/IN', dose: '0.1-0.3 mg/kg IVL (30-60 sec)', note: 'IM : 0.5-1 mg/kg. IN : 0.5 mg/kg. Administration préalable opiacés importante' },
-      { indication: 'ISR — induction', route: 'IV', dose: '1-2 mg/kg', note: 'Selon protocole ISR' },
-    ],
-    dosePed: [
-      { indication: 'Antalgie (EVA ≥ 7)', route: 'IVL/IM/IN', dose: '0.5-1 mg/kg IVL', note: 'IM : 1-2 mg/kg. IN : 1 mg/kg' },
-      { indication: 'ISR', route: 'IV', dose: '1-2 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'Antalgie (EVA ≥ 7)', route: 'IVL (> 60 sec)', dose: '0.5 mg/kg\nTitration : 0.25 mg/kg', note: 'IM : 2 mg/kg. IN : 1 mg/kg'}, {indication: 'ISR — induction', route: 'IVL', dose: '2 – 3 mg/kg', note: 'IM : 4-8 mg/kg. ⚠ relation d\'aide soutenue obligatoire'}],
+    dosePed: [{indication: 'Antalgie (EVA ≥ 7)', route: 'IVL (> 60 sec)', dose: '0.5 – 1 mg/kg', note: 'IM : 1-2 mg/kg. IN : 1 mg/kg'}, {indication: 'ISR', route: 'IV', dose: '1 – 2 mg/kg', note: ''}],
     ci: ['HTA mal équilibrée (relative)', 'ATCD de troubles psychotiques / troubles du comportement', '⚠ ISR : voir CI kétamine (HTIC, TCC, glaucome, etc.) — voir fiche MEOPA'],
     se: ['Hallucinations / dissociation / émergence (dysphorie)', 'Hypersécrétion salivaire', 'Tachycardie / HTA', 'Nystagmus', 'Laryngospasme (rare)'],
     meca: 'Antagoniste des récepteurs NMDA → dissociation dose-dépendante → analgésie, amnésie, sédation. Maintien des réflexes laryngés (relative). Bronchodilatateur.',
@@ -1025,12 +999,8 @@ const DEFAULT_DRUGS = [
     classe: 'Analgésique non opioïde — palier 1 OMS', cat: 'analgesique',
     algos: ['Antalgie traumatique', 'Antalgie non traumatique', 'Antalgie pédiatrique (coantalgique)'],
     forme: 'Paracétamol®, Dafalgan®, Acétalgine®, Panadol® cpr 250 mg, 500 mg, 1 g\nDafalgan® IV sol perf 1 g/100 mL\nPerfalgan® 1 g/100 mL (hors commerce 07/2024)\nDafalgan® Dolo Junior sirop 30 mg/mL\nDafalgan®, Panadol® supp 80 mg, 150 mg, 300 mg, 600 mg\nAcétalgine® suppo 125 mg, 250 mg, 500 mg',
-    doseAdulte: [
-      { indication: 'Antalgie (multimodale)', route: 'IV/PO', dose: '1 g', note: 'IVL sur 15 min. Toutes les 6 h max. Dose max 4 g/24 h. Réduire à 3 g/24 h si < 50 kg' },
-    ],
-    dosePed: [
-      { indication: 'Antalgie', route: 'IV/PO', dose: '15 mg/kg', note: 'Toutes les 6 h. Max 60 mg/kg/24 h (max 4 g/24 h)' },
-    ],
+    doseAdulte: [{indication: 'Antalgie (coantalgique, multimodale)', route: 'IV/PO', dose: '≥ 50 kg : 1 g\n< 50 kg : 15 mg/kg', note: 'IVL sur 10-15 min. Max 4 g/24h. Toutes les 6h'}],
+    dosePed: [{indication: 'Antalgie / fièvre', route: 'IV/PO', dose: '15 mg/kg (max 1 g)', note: 'Toutes les 6h. Max 60 mg/kg/24h'}],
     ci: ['Insuffisance hépatique', 'Prise de 1 g dans les 4 h ou 4 g dans les 24 h'],
     se: ['Hépatotoxicité (surdosage)', 'Réactions allergiques (rare)'],
     meca: 'Mécanisme exact incomplètement élucidé. Inhibe la synthèse des prostaglandines dans le SNC (non périphériquement) → effet analgésique central et antipyrétique. Absence d\'effet anti-inflammatoire périphérique.',
@@ -1043,12 +1013,8 @@ const DEFAULT_DRUGS = [
     classe: 'AINS injectable — analgésique palier 1-2', cat: 'analgesique',
     algos: ['Antalgie non traumatique (colique, douleur viscérale)'],
     forme: 'Tora-dol® cpr pell 10 mg\nTora-dol® sol inj 30 mg/mL',
-    doseAdulte: [
-      { indication: 'Douleur viscérale / colique (EVA > 3)', route: 'IV', dose: '15-30 mg', note: 'IVL lente. Max 90 mg/24 h. Durée max 5 jours. Utilisation courte durée uniquement' },
-    ],
-    dosePed: [
-      { indication: 'Douleur (≥ 2 ans)', route: 'IV', dose: '0.5 mg/kg', note: 'Max 15 mg/dose. Usage court (<5j)' },
-    ],
+    doseAdulte: [{indication: 'Douleur viscérale / colique (EVA > 3)', route: 'IV', dose: '≥ 50 kg et < 65 ans : 30 mg\n< 50 kg ou > 65 ans : 15 mg', note: 'IVL sur 15 sec. Max 120 mg/jour. Usage court (< 5 j)'}],
+    dosePed: [{indication: 'Douleur (≥ 2 ans)', route: 'IV', dose: '0.5 mg/kg (max 15 mg/dose)', note: 'Usage court (< 5 j)'}],
     ci: ['ATCD allergie aux AINS et aspirine', 'Insuffisance rénale', 'Ulcère gastrique actif ou < 3 mois', 'Grossesse', 'Ictère / ascite', 'Maladie inflammatoire intestinale (Crohn, RCH)'],
     se: ['Troubles gastriques / gastralgie', 'Insuffisance rénale aiguë', 'Saignements gastro-intestinaux', 'Rétention hydrosodée'],
     meca: 'Inhibiteur non sélectif COX-1 et COX-2 → ↓ prostaglandines inflammatoires → analgésie périphérique et centrale. Seul AINS utilisable pour les douleurs sévères en IV.',
@@ -1061,12 +1027,8 @@ const DEFAULT_DRUGS = [
     classe: 'Analgésique inhalé (mélange équimolaire O2/N2O)', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA > 3 - < 6)', 'Antalgie pédiatrique traumatique'],
     forme: 'Entonox® gaz inhal 5 L, 10 L, 20 L\nMélange équimolaire O2 50% / N2O 50%',
-    doseAdulte: [
-      { indication: 'Antalgie (EVA 3-6) / gestes douloureux', route: 'Inhalé', dose: 'Auto-administration (masque)', note: 'Effet en 3-5 min. Maximum 60 min d\'utilisation. Surveiller SpO2' },
-    ],
-    dosePed: [
-      { indication: 'Antalgie / gestes douloureux (≥ 1 an)', route: 'Inhalé', dose: 'Auto-administration', note: 'Surveiller SpO2 impérative. Si démixtion du gaz → risque hypoxémie' },
-    ],
+    doseAdulte: [{indication: 'Antalgie / gestes douloureux', route: 'Inhalé', dose: 'Auto-administration — système à la demande', note: 'Surveiller SpO2. Max 60 min. Aérer cellule après utilisation'}],
+    dosePed: [{indication: 'Antalgie / gestes douloureux', route: 'Inhalé', dose: 'Identique adulte — auto-administration', note: 'SpO2 impérative'}],
     ci: ['Grossesse (1er trimestre)', 'TCC avec HTIC', 'Occlusion intestinale', 'Pneumothorax', 'Embolie gazeuse', 'BPCO', 'Accident de décompression', 'Opération récente de l\'oreille / sinus', 'Sinusite / otite', 'Traumatisme maxillo-facial', 'ATCD de psychose / phobie du masque'],
     se: ['Nausées / vomissements', 'Euphorie / légèreté', 'Paresthésies', 'Sédation légère'],
     meca: 'Mécanisme d\'action non entièrement élucidé. Interaction avec récepteurs NMDA (N2O) et récepteurs opioïdes → analgésie et légère sédation.',
@@ -1079,9 +1041,7 @@ const DEFAULT_DRUGS = [
     classe: 'Analgésique inhalé halogéné', cat: 'analgesique',
     algos: ['Antalgie traumatique (EVA > 3)'],
     forme: 'Penthrox® liq 99.9% — inhalateur portable (flacon 3 mL)',
-    doseAdulte: [
-      { indication: 'Antalgie traumatique aiguë', route: 'Inhalé', dose: '3 mL / flacon (= 1 dose)', note: 'Max 2 flacons par épisode douloureux (max 6 mL). Max 15 mL/semaine' },
-    ],
+    doseAdulte: [{indication: 'Antalgie traumatique aiguë', route: 'Inhalé', dose: '3 mL (1 flacon)', note: 'Répétable 1x (max 6 mL/48h, max 15 mL/semaine). Orifice ouvert : 0.1-0.2% / fermé : 0.2-0.4%'}],
     dosePed: [],
     ci: ['Insuffisance rénale ou hépatique (sévère)', 'ATCD de sensibilisation au méthoxyflurane ou aux halogénés', 'Grossesse (sauf accouchement)', 'Hyperthermie maligne'],
     se: ['Sédation légère', 'Nausées', 'Vertiges', 'Néphrotoxicité (usage prolongé — non pertinent en préhospitalier)', 'Anxiété légère'],
@@ -1095,14 +1055,8 @@ const DEFAULT_DRUGS = [
     classe: 'Benzodiazépine — sédatif / anticonvulsivant', cat: 'analgesique',
     algos: ['Antalgie traumatique (adjuvant kétamine)', 'État d\'agitation (tranquillisation rapide)'],
     forme: 'Midazolam®, Dormicum® sol inj 5 mg/5 mL ; 5 mg/mL ; 15 mg/3 mL ; 50 mg/10 mL\nBuccolam® sol buccal 2.5 mg/0.5 mL ; 5 mg/1 mL ; 7.5 mg/1.5 mL ; 10 mg/2 mL\nDormicum® cpr pell 7.5 mg et 15 mg',
-    doseAdulte: [
-      { indication: 'Sédation / anxiolyse (adjuvant)', route: 'IV/IM/IN', dose: '1-2.5 mg', note: 'Titration. Prudence si opiacés associés → dépression respiratoire potentialisée' },
-      { indication: 'État d\'agitation (tranquillisation)', route: 'IM/IN', dose: '2.5-5 mg', note: 'Si voie orale refusée / inefficace' },
-    ],
-    dosePed: [
-      { indication: 'Convulsions', route: 'IN/IM/IV', dose: '0.1-0.2 mg/kg', note: 'Max 5 mg (< 5 ans) / 10 mg (> 5 ans)' },
-      { indication: 'Sédation légère', route: 'IN/IM', dose: '0.1 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'Analgésie / analgo-sédation vigile', route: 'IVL', dose: '1 – 2 mg (titration, max 7.5 mg)', note: '⚠ Potentialisation si opiacés — surveiller FR et SpO2'}, {indication: 'Convulsions', route: 'IV', dose: '1 mg IV\n5 mg IN/IM si VVP impossible', note: 'Répétable'}],
+    dosePed: [{indication: 'Convulsions', route: 'IN/IM', dose: '0.2 mg/kg IM si VVP impossible', note: 'UpToDate : max 10 mg IM. IV : 0.1-0.2 mg/kg'}],
     ci: ['Insuffisance respiratoire sévère', 'Dépression du SNC', 'Allergie aux benzodiazépines', '⚠ Antidépresseurs tricycliques + BZD → CI flumazénil'],
     se: ['Dépression respiratoire (potentialisée par opioïdes)', 'Hypotension', 'Sédation excessive', 'Amnésie antérograde'],
     meca: 'Potentialise le GABA-A (liaison BZD) → hyperpolarisation neuronale → sédation, anxiolyse, myorelaxation, amnésie, anticonvulsivant.',
@@ -1115,12 +1069,8 @@ const DEFAULT_DRUGS = [
     classe: 'Benzodiazépine — anticonvulsivant / sédatif', cat: 'analgesique',
     algos: ['Convulsions', 'État d\'agitation'],
     forme: 'Valium® sol inj 10 mg/2 mL (IM/IV)\nValium® cpr 5 mg et 10 mg\nDiazepam® rectal tube 5 mg et 10 mg',
-    doseAdulte: [
-      { indication: 'Convulsions', route: 'IV', dose: '5-10 mg', note: 'IVL lente. Répéter si nécessaire. Max 30 mg' },
-    ],
-    dosePed: [
-      { indication: 'Convulsions', route: 'IR/IV', dose: '0.5 mg/kg (IR)\n0.2-0.3 mg/kg (IV)', note: 'Max 10 mg. Administration IR si pas d\'accès IV' },
-    ],
+    doseAdulte: [{indication: 'Convulsions', route: 'IVL', dose: '0.15 – 0.25 mg/kg', note: 'Répétable 1x. Max 3 mg/kg/24h. Injection lente < 5 mg/min'}, {indication: 'Éclampsie', route: 'IVL', dose: '10 – 20 mg', note: 'Répéter 5 mg si nécessaire'}],
+    dosePed: [{indication: 'Convulsions', route: 'IR', dose: '< 15 kg : 5 mg\n> 15 kg : 10 mg', note: 'IV : 0.15 – 0.2 mg/kg (max 10 mg/dose). Répétable 1x toutes les 5 min'}],
     ci: ['Insuffisance respiratoire sévère', 'Dépression SNC', 'Glaucome à angle fermé'],
     se: ['Sédation', 'Dépression respiratoire', 'Hypotension', 'Phlébite (IV)'],
     meca: 'Idem midazolam — liaison aux récepteurs GABA-A → potentialisation du chlore → dépression du SNC. Demi-vie longue.',
@@ -1133,10 +1083,7 @@ const DEFAULT_DRUGS = [
     classe: 'Benzodiazépine — anxiolytique / anticonvulsivant', cat: 'analgesique',
     algos: ['Convulsions', 'État d\'agitation'],
     forme: 'Lorazepam®, Temesta®, Sedazin® cpr 1 mg, 2.5 mg\nRativor® sol inj 4 mg/mL',
-    doseAdulte: [
-      { indication: 'Convulsions / sédation', route: 'IV/IM/SL', dose: '1-2 mg', note: 'Buccal / sublingual si pas d\'accès IV' },
-      { indication: 'État d\'agitation', route: 'PO/IM', dose: '1-2 mg', note: 'Première intention PO si coopérant' },
-    ],
+    doseAdulte: [{indication: 'Anxiété / agitation / sevrage', route: 'SL/PO', dose: '1 – 2.5 mg sublingual', note: 'Cpr orodispersibles non sécables !'}, {indication: 'Convulsions', route: 'IV/IM', dose: '2 – 4 mg (0.05 mg/kg)', note: 'HUG : 2.5 mg au sillon gingival'}],
     dosePed: [],
     ci: ['Insuffisance respiratoire sévère', 'Myasthénie grave'],
     se: ['Sédation', 'Dépression respiratoire', 'Amnésie antérograde'],
@@ -1150,12 +1097,8 @@ const DEFAULT_DRUGS = [
     classe: 'Benzodiazépine — anticonvulsivant', cat: 'analgesique',
     algos: ['Convulsions'],
     forme: 'Rivotril® conc inj 1 mg/mL\nRivotril® cpr 0.5 mg et 2 mg\nRivotril® gouttes 2.5 mg/mL',
-    doseAdulte: [
-      { indication: 'Convulsions / état de mal épileptique', route: 'IV', dose: '0.5-1 mg', note: 'IVL sur 2-3 min. Répéter si nécessaire. Max 2 mg' },
-    ],
-    dosePed: [
-      { indication: 'Convulsions', route: 'IV', dose: '0.01-0.05 mg/kg', note: 'Max 0.5 mg/dose' },
-    ],
+    doseAdulte: [{indication: 'Convulsions / état de mal épileptique', route: 'IVL/IM', dose: '1 mg', note: 'Répétable. Selon Brevimed : 0.015 mg/kg IVL'}],
+    dosePed: [{indication: 'Convulsions', route: 'IVL/IM', dose: '0.01 mg/kg (max 0.5 mg)', note: ''}],
     ci: ['Insuffisance hépatique sévère', 'Hypersensibilité aux BZD'],
     se: ['Dépression respiratoire', 'Hypotension', 'Sédation'],
     meca: 'BZD à haute affinité pour les récepteurs GABA-A → anticonvulsivant puissant.',
@@ -1168,12 +1111,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antagoniste des benzodiazépines', cat: 'analgesique',
     algos: ['Troubles de la conscience (intoxication BZD)'],
     forme: 'Anexate®, Flumazenil® 0.5 mg/5 mL',
-    doseAdulte: [
-      { indication: 'Intoxication aux BZD seules', route: 'IV', dose: '0.2 mg', note: 'Répéter 0.1 mg toutes les 60 sec si nécessaire. Max 1 mg total' },
-    ],
-    dosePed: [
-      { indication: 'Intoxication BZD', route: 'IV', dose: '0.01 mg/kg', note: 'Max 0.2 mg/dose, max 1 mg total' },
-    ],
+    doseAdulte: [{indication: 'Intoxication aux BZD seules', route: 'IV', dose: '0.2 mg en 15 sec\npuis 0.1 mg toutes les 60 sec', note: 'Max 1 mg (HUG : titrer jusqu\'à 5 mg). ⚠ CI si TCA ou cocaïne'}],
+    dosePed: [{indication: 'Intoxication BZD (> 1 an)', route: 'IV', dose: '0.01 mg/kg (max 0.2 mg)', note: 'Puis 0.005-0.01 mg/kg toutes les 3 min. Max 1 mg total'}],
     ci: ['⚠ CONTRE-INDICATION ABSOLUE si antidépresseurs tricycliques (TCA) associés → risque convulsions/état de mal épileptique', 'Dépendance aux BZD (risque sevrage aigu)', 'Épilepsie traitée par BZD'],
     se: ['Convulsions (si TCA co-ingérés ou BZD pour épilepsie)', 'Syndrome de sevrage aigu (patient dépendant)', 'Nausées / vomissements / vertiges', 'Agitation / anxiété'],
     meca: 'Antagoniste compétitif des récepteurs BZD (complexe GABA-A) → lève rapidement les effets des BZD. Demi-vie courte → risque de re-sédation.',
@@ -1186,9 +1125,7 @@ const DEFAULT_DRUGS = [
     classe: 'Anticholinergique — spasmolytique', cat: 'analgesique',
     algos: ['Antalgie non traumatique (douleur en colique / spasme)'],
     forme: 'Buscopan® sol inj 20 mg/mL',
-    doseAdulte: [
-      { indication: 'Colique néphrétique / biliaire / spasme viscéral', route: 'IV', dose: '20 mg', note: 'IVB lente. Peut répéter 1x. CI si tachyarythmie > 150/min' },
-    ],
+    doseAdulte: [{indication: 'Colique néphrétique / biliaire / spasme viscéral', route: 'IVL', dose: '20 mg', note: 'Préparation : 1 mL (20 mg) + 9 mL NaCl 0.9%. CI si tachyarythmie > 150/min'}],
     dosePed: [],
     ci: ['Tachyarythmie > 150/min', 'Glaucome à angle fermé', 'Sténose gastrique ou intestinale', 'Myasthénie grave'],
     se: ['Tachycardie', 'Sécheresse buccale', 'Rétention urinaire', 'Constipation', 'Troubles visuels'],
@@ -1203,12 +1140,8 @@ const DEFAULT_DRUGS = [
     classe: 'Hypnotique d\'induction (ISR)', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR (induction)'],
     forme: 'Etomidate Lipuro Braun® 20 mg/10 mL (= 2 mg/mL)',
-    doseAdulte: [
-      { indication: 'Induction pour ISR', route: 'IV', dose: '0.3 mg/kg', note: 'Injection rapide. Hémodynamique stable. Pas de curarisant inclus → toujours associer à suxaméthonium ou rocuronium' },
-    ],
-    dosePed: [
-      { indication: 'Induction ISR (> 10 ans)', route: 'IV', dose: '0.3 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'ISR — induction', route: 'IVD', dose: '0.3 mg/kg (pur, ne pas diluer)', note: 'Délai action 15-45 sec. Durée 3-12 min'}],
+    dosePed: [{indication: 'ISR (pédiatrie)', route: 'IV', dose: '0.3 – 0.4 mg/kg', note: 'Délai ~15-45 sec, durée 10-12 min'}],
     ci: ['Insuffisance surrénalienne', 'Sepsis (relative — inhibe cortisol)', 'Grossesse'],
     se: ['Myoclonies à l\'induction', 'Douleur à l\'injection', 'Nausées / vomissements', 'Insuffisance corticosurrénalienne (usage prolongé)', 'Pas d\'effet analgésique'],
     meca: 'Potentialise les récepteurs GABA-A → sédation rapide et profonde. N\'inhibe pas les réflexes cardiovasculaires → hémodynamique stable. Inhibe la 11β-hydroxylase → ↓ cortisol (dose unique — peu pertinent).',
@@ -1221,12 +1154,8 @@ const DEFAULT_DRUGS = [
     classe: 'Curare dépolarisant', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR'],
     forme: 'Succinolin® sol inj 100 mg/2 mL',
-    doseAdulte: [
-      { indication: 'ISR — curarisation', route: 'IV', dose: '1-2 mg/kg', note: 'Injection rapide. Fasciculations en début d\'action' },
-    ],
-    dosePed: [
-      { indication: 'ISR', route: 'IV', dose: '2 mg/kg (< 2 ans)\n1-1.5 mg/kg (> 2 ans)', note: '' },
-    ],
+    doseAdulte: [{indication: 'ISR — curarisation', route: 'IV (pur)', dose: '1 – 1.5 mg/kg', note: 'Max 2 bolus itératifs. ⚠ CI : brûlures J10-J60, paraplégies < 6 mois, alitement > 10 j, crush syndrome'}],
+    dosePed: [{indication: 'ISR', route: 'IV', dose: '1 – 1.5 mg/kg', note: ''}],
     ci: ['Hyperkaliémie', 'Brûlures > 24h / polytraumatisme > 48-72h (hyperkaliémie rebond)', 'Myopathies (rhabdomyolyse)', 'Déficit en cholinestérases', 'Antécédent d\'hyperthermie maligne', 'Œil ouvert (augmente PIO)'],
     se: ['Fasciculations musculaires', 'Hyperkaliémie (risque ACR si brûlures/polytrauma)', 'Bradycardie (pédiatrie)', 'Augmentation PIO / pression gastrique', 'Hyperthermie maligne (rare)'],
     meca: 'Dépolarise la plaque motrice (agoniste de l\'ACh) → fasciculations puis paralysie flasque. Hydrolyse par pseudo-cholinestérases → courte durée d\'action.',
@@ -1239,13 +1168,8 @@ const DEFAULT_DRUGS = [
     classe: 'Curare non dépolarisant', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR'],
     forme: 'Esmeron®, Rocuronium® sol inj 50 mg/5 mL et 100 mg/10 mL',
-    doseAdulte: [
-      { indication: 'ISR — curarisation haute dose', route: 'IV', dose: '1.2 mg/kg', note: 'Délai d\'intubation 60 sec. Durée 60-90 min à cette dose' },
-      { indication: 'ISR standard', route: 'IV', dose: '0.6 mg/kg', note: 'Délai 90 sec. Durée 30-45 min' },
-    ],
-    dosePed: [
-      { indication: 'ISR', route: 'IV', dose: '1.2 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'ISR — curarisation (double dose)', route: 'IV', dose: '1 – 1.2 mg/kg', note: 'De choix si CI suxaméthonium. Antidote : Sugammadex (Bridion®) 16 mg/kg'}, {indication: 'Entretien anesthésie', route: 'IV', dose: '0.3 mg/kg', note: 'Entretien PSE : 5-12 µg/kg/min'}],
+    dosePed: [{indication: 'ISR', route: 'IV', dose: '1 – 1.2 mg/kg', note: ''}],
     ci: ['Allergie au rocuronium', 'Absence de sugammadex disponible si antagonisation nécessaire'],
     se: ['Tachycardie modérée', 'Réaction anaphylactique (rare mais possible)'],
     meca: 'Antagoniste compétitif de l\'acétylcholine à la jonction neuromusculaire → bloc non dépolarisant. Réversibilité rapide et complète possible avec sugammadex.',
@@ -1258,9 +1182,7 @@ const DEFAULT_DRUGS = [
     classe: 'Hypnotique d\'induction et de sédation', cat: 'anesth',
     algos: ['Gestion des voies aériennes — ISR (délégation médicale requise)'],
     forme: 'Propofol®, Disoprivan 1% MCT Fresenius® 10 mg/mL\nFlacon 100 mg/10 mL ; 200 mg/20 mL ; 500 mg/50 mL ; 1 g/100 mL\nPropofol 2% MCT Fresenius® 1 g/50 mL',
-    doseAdulte: [
-      { indication: 'Induction (délégation médicale)', route: 'IV', dose: '1.5-2.5 mg/kg', note: 'Titration IVL. Hémodynamique fragile → dose réduite. PAS d\'ANALGÉSIE' },
-    ],
+    doseAdulte: [{indication: 'ISR — induction (délégation médicale)', route: 'IV', dose: '1.5 – 3 mg/kg (pur, ne pas diluer)', note: 'Entretien : 4-10 mg/kg/h en PSE'}],
     dosePed: [],
     ci: ['Allergie aux huiles de soja / œuf', 'Grossesse (sauf urgence)', 'Pédiatrie (sédation prolongée CI)'],
     se: ['Hypotension sévère', 'Apnée', 'Douleur à l\'injection', 'Dépression myocardique'],
@@ -1275,12 +1197,8 @@ const DEFAULT_DRUGS = [
     classe: 'β2-mimétique (bronchodilatateur)', cat: 'respiratoire',
     algos: ['Troubles respiratoires (asthme)', 'Réaction anaphylactique (bronchospasme)'],
     forme: 'Salamol®, Ventolin® aéros doseur 100 mcg\nVentolin® sol inhal 5 mg/mL (nébulisation)\nVentolin® sol inj 0.5 mg/mL\nVentolin® Diskus® pdr inh 200 mcg',
-    doseAdulte: [
-      { indication: 'Bronchospasme / asthme', route: 'NEB', dose: '2.5-5 mg (0.5-1 mL) ad 4 mL NaCl 0.9%', note: 'O2 FiO2 max. Répétable. Monitorage EtCO2' },
-    ],
-    dosePed: [
-      { indication: 'Bronchospasme / asthme', route: 'NEB', dose: '2.5 mg (0-12 ans)\n5 mg (> 12 ans)', note: 'O2 (chambre d\'inhalation possible). Répétable' },
-    ],
+    doseAdulte: [{indication: 'Bronchospasme / asthme (nébulisation)', route: 'NEB', dose: '5 mg ad 5 mL NaCl 0.9%', note: 'O2 FiO2 max (asthme). Répétable. Monitorage EtCO2'}, {indication: 'Aérosol-doseur (avec chambre)', route: 'MDI', dose: '2 – 4 puffs (200-400 µg)', note: ''}],
+    dosePed: [{indication: 'Bronchospasme (nébulisation)', route: 'NEB', dose: '< 5 ans : 2.5 mg ad 5 mL NaCl 0.9%\n> 5 ans : 5 mg ad 5 mL NaCl 0.9%', note: 'HUG : 2.5 mg aérosol (10 gttes + 3 mL NaCl)'}, {indication: 'Aérosol-doseur (avec chambre)', route: 'MDI', dose: '< 6 ans : 6 puffs', note: 'Répéter aux 20 min'}],
     ci: ['Tachyarythmie sévère (relative)', 'Hyperthyroïdie non traitée (relative)'],
     se: ['Tachycardie (dose-dépendante)', 'Tremblements / agitation', 'Hypokaliémie (forte dose)', 'Céphalées'],
     meca: 'Agoniste β2 sélectif → activation adénylate cyclase → ↑ AMPc → bronchodilatation par relaxation des cellules musculaires lisses bronchiques.',
@@ -1293,12 +1211,8 @@ const DEFAULT_DRUGS = [
     classe: 'β2-mimétique + anticholinergique bronchodilatateur', cat: 'respiratoire',
     algos: ['Troubles respiratoires (BPCO)', 'Troubles respiratoires (asthme sévère)'],
     forme: 'Dospir®, Ipramol® sol inhal\nSalbutamol 2.5 mg + Ipratropium 0.5 mg',
-    doseAdulte: [
-      { indication: 'BPCO exacerbée / asthme sévère', route: 'NEB', dose: 'Salbutamol 2.5-5 mg + Ipratropium 0.5 mg', note: 'O2 TITRATION (SpO2 ~ 90% si BPCO) / O2 FiO2 max si asthme. Répétable' },
-    ],
-    dosePed: [
-      { indication: 'Bronchospasme sévère', route: 'NEB', dose: 'Salbutamol + Ipratropium 0.25 mg', note: '' },
-    ],
+    doseAdulte: [{indication: 'BPCO / asthme sévère (nébulisation)', route: 'NEB', dose: 'Ipratropium 0.5 mg + Salbutamol 5 mg\n(ex : 1 monodose Dospir® + 2 monodoses Ventolin®)', note: 'O2 TITRATION si BPCO (SpO2 ~ 90%). Répétable'}],
+    dosePed: [{indication: 'Bronchospasme sévère', route: 'NEB', dose: '1 dose unitaire Dospir® (0.5 mg + 2.5 mg/2.5 mL)\n+ 2.5 mL NaCl pour aérosolisation', note: ''}],
     ci: ['Hypersensibilité à l\'atropine (pour ipratropium)', 'Glaucome à angle fermé (relative — pas nébulisation oculaire)', 'Rétention urinaire (relative)'],
     se: ['Tachycardie', 'Sécheresse buccale', 'Constipation', 'Céphalées'],
     meca: 'Salbutamol : β2-agoniste → bronchodilatation. Ipratropium : anticholinergique M3 bronchique → ↓ sécrétions, bronchodilatation complémentaire. Synergie des deux mécanismes.',
@@ -1311,13 +1225,8 @@ const DEFAULT_DRUGS = [
     classe: 'Corticostéroïde (glucocorticoïde)', cat: 'respiratoire',
     algos: ['Troubles respiratoires (asthme, BPCO)', 'Réaction anaphylactique', 'Traumatisme médullaire (protocole spécifique)'],
     forme: 'Dépo-Médrol® susp inj 40 mg/mL ; 80 mg/2 mL ; 200 mg/5 mL\nMédrol® cpr 4 mg, 16 mg, 32 mg, 100 mg\nSolu-Médrol® subst. sèche 40 mg, 125 mg, 500 mg, 1000 mg',
-    doseAdulte: [
-      { indication: 'Asthme sévère / BPCO exacerbée', route: 'IV', dose: '40-125 mg', note: 'IVL. Effet anti-inflammatoire différé (2-4 h) mais utile' },
-      { indication: 'Réaction anaphylactique (2ème ligne)', route: 'IV', dose: '125 mg', note: 'Après adrénaline. Effet non immédiat — prévention réactions biphasiques' },
-    ],
-    dosePed: [
-      { indication: 'Asthme sévère', route: 'IV', dose: '1-2 mg/kg', note: 'Max 40 mg' },
-    ],
+    doseAdulte: [{indication: 'Réaction allergique / anaphylaxie', route: 'IV', dose: '125 mg (HUG) ou 1-2 mg/kg (max 125 mg)', note: 'Effet retardé 2-4h — après adrénaline'}, {indication: 'Asthme / BPCO exacerbée', route: 'IV', dose: '1 – 2 mg/kg', note: 'HUG BSC 2025'}],
+    dosePed: [{indication: 'Asthme sévère', route: 'IVL', dose: '0.5 – 2 mg/kg', note: ''}],
     ci: ['Infections fongiques systémiques', 'Vaccins vivants (usage chronique)'],
     se: ['Hyperglycémie', 'HTA (usage chronique)', 'Immunosuppression (usage chronique)', 'Insomnie / agitation (aiguë)'],
     meca: 'Glucocorticoïde puissant → ↑ expression lipocortine → inhibe phospholipase A2 → ↓ prostaglandines, leucotriènes → effet anti-inflammatoire bronchique. Effet retardé (2-4 h).',
@@ -1331,13 +1240,8 @@ const DEFAULT_DRUGS = [
     classe: 'Apport glucidique', cat: 'neuro',
     algos: ['Troubles de la conscience (hypoglycémie)', 'Retour à la circulation spontanée'],
     forme: 'Glucose® sol inj amp 10 mL : 5% / 10% / 20% / 40%\n• 1 mL G5% = 50 mg glucose\n• 1 mL G10% = 100 mg glucose\n• 1 mL G20% = 200 mg glucose\n• 1 mL G40% = 400 mg glucose\nGlucose® sol perf 5% / 10% / 20% flacon 100-1000 mL',
-    doseAdulte: [
-      { indication: 'Hypoglycémie < 4 mmol/L', route: 'IVL', dose: '10-20 g (30-50 mL G30%)', note: 'Min 16 g. Administrer lentement (irritant veineux). But HGT > 4 mmol/L' },
-      { indication: 'Hypoglycémie — si PO possible', route: 'PO', dose: '15-20 g de glucides', note: 'Sucre, jus de fruit, si déglutition conservée et conscient' },
-    ],
-    dosePed: [
-      { indication: 'Hypoglycémie < 4 mmol/L', route: 'IVL', dose: '0.2-0.5 g/kg (1-2 mL/kg G25%)', note: 'Lentement' },
-    ],
+    doseAdulte: [{indication: 'Hypoglycémie < 4 mmol/L — PO (si déglutition conservée)', route: 'PO', dose: '16 – 20 g (4-5 morceaux sucre)', note: ''}, {indication: 'Hypoglycémie < 4 mmol/L — IV', route: 'IVL', dose: '16 – 20 g IV lent (1-2 min)', note: 'HUG : 16 g IV (amp 4 g/10 mL), à répéter. But HGT > 4 mmol/L'}],
+    dosePed: [{indication: 'Hypoglycémie < 4 mmol/L', route: 'PO/IV/IO', dose: '0.4 g/kg\n= G20% 2 mL/kg', note: ''}],
     ci: ['Hyperglycémie (sauf si hypoglycémie confirmée)', 'Extravasation (nécrose tissulaire avec G50%)'],
     se: ['Hyperglycémie de rebond', 'Thrombophlébite (concentrations élevées)', 'Surcharge hydrique (G5%)'],
     meca: 'Apport direct de glucose → correction de l\'hypoglycémie → normalisation de la glycémie → restauration du métabolisme cérébral.',
@@ -1350,12 +1254,8 @@ const DEFAULT_DRUGS = [
     classe: 'Hormone hyperglycémiante', cat: 'neuro',
     algos: ['Troubles de la conscience (hypoglycémie sans accès veineux)'],
     forme: 'GlucaGen Novo® Nordisk HypoKit® 1 mg + solvant\nBaqsimi® 3 mg pdr appl nasale',
-    doseAdulte: [
-      { indication: 'Hypoglycémie (si pas de CVP)', route: 'IM/SC', dose: '1 mg', note: 'Face antéro-latérale cuisse. Délai 10-15 min. Réalimentation orale impérative dès réveil' },
-    ],
-    dosePed: [
-      { indication: 'Hypoglycémie (si pas de CVP)', route: 'IM', dose: '< 25 kg : 0.5 mg\n> 25 kg : 1 mg', note: '' },
-    ],
+    doseAdulte: [{indication: 'Hypoglycémie (si pas de VVP)', route: 'SC/IM', dose: '1 mg', note: 'Réalimentation orale dès réveil. Peut provoquer vomissements si IV trop rapide'}, {indication: 'Intoxication bêtabloquants / anticalciques', route: 'IV lent', dose: '5 – 10 mg dans G5% sur 15 min', note: 'Antidote labétalol : 1 mg IV'}],
+    dosePed: [{indication: 'Hypoglycémie (si pas de VVP)', route: 'IM', dose: '< 25 kg : 0.5 mg\n> 25 kg : 1 mg', note: ''}],
     ci: ['Phéochromocytome', 'Insulinome (relatif)', 'Glycogénolyse hépatique épuisée (dénutrition, jeûne prolongé — effet réduit)'],
     se: ['Nausées / vomissements (fréquents)', 'Tachycardie', 'Hypokaliémie'],
     meca: 'Hormone sécrétée par les cellules α du pancréas → stimule la glycogénolyse hépatique + gluconéogenèse → ↑ glycémie. N\'est efficace que si les réserves de glycogène hépatique sont suffisantes.',
@@ -1368,9 +1268,7 @@ const DEFAULT_DRUGS = [
     classe: 'Vitamine B1 (traitement déficit thiamine)', cat: 'neuro',
     algos: ['Troubles de la conscience (contexte malnutrition / OH chronique)'],
     forme: 'Benerva® cpr 100 mg et 300 mg\nBenerva® sol inj 100 mg/mL',
-    doseAdulte: [
-      { indication: 'Malnutrition / OH chronique / syndrome de Wernicke', route: 'IV', dose: '100 mg', note: 'IVL lente. À administrer AVANT tout apport glucosé (risque précipitation encéphalopathie de Wernicke)' },
-    ],
+    doseAdulte: [{indication: 'Suspicion hypovitaminose B1 (malnutrition / OH chronique)', route: 'IV', dose: '100 mg\nHUG BSC 2025 : 200 mg IV', note: '⚠ Administrer AVANT le glucose. Encéphalopathie de Wernicke si glucose seul'}],
     dosePed: [],
     ci: ['Allergie à la thiamine (rare)'],
     se: ['Réaction d\'hypersensibilité (rare)', 'Douleur à l\'injection (IV rapide)'],
@@ -1385,10 +1283,8 @@ const DEFAULT_DRUGS = [
     classe: 'Diurétique de l\'anse', cat: 'autre',
     algos: ['Troubles respiratoires (OAP) — si signes hypervolémie importants'],
     forme: 'Lasix® cpr 40 mg et 500 mg\nLasix® sol inj 20 mg/2 mL\nLasix® sol perf 250 mg/25 mL IV',
-    doseAdulte: [
-      { indication: 'OAP avec hypervolémie marquée', route: 'IV', dose: '20-40 mg', note: 'IVB. CI : patient âgé, déshydraté, hypertherme, hypovolémique' },
-    ],
-    dosePed: [],
+    doseAdulte: [{indication: 'OAP avec hypervolémie marquée', route: 'IV', dose: '20 – 40 mg', note: 'IV lent. CI : patient âgé, déshydraté, hypovolémique, hypertherme'}],
+    dosePed: [{indication: 'OAP pédiatrique (données limitées)', route: 'IV/IM', dose: '0.5 – 2 mg/kg', note: 'Max 6 mg/kg/dose'}],
     ci: ['Hypovolémie', 'Déshydratation', 'Anurie / insuffisance rénale sévère', 'Patient âgé (relatif)', 'Hyperthermie'],
     se: ['Hypokaliémie', 'Déshydratation / hypovolémie', 'Hypotension', 'Ototoxicité (doses élevées)'],
     meca: 'Inhibe le cotransporteur Na-K-2Cl (segment ascendant de l\'anse de Henle) → diurèse forcée → ↓ précharge → soulagement OAP. Vasodilatation veineuse immédiate (avant la diurèse).',
@@ -1401,9 +1297,7 @@ const DEFAULT_DRUGS = [
     classe: 'Inhibiteur de la pompe à protons (IPP)', cat: 'autre',
     algos: ['Antalgie non traumatique (brûlure épigastrique / hémorragie digestive haute)'],
     forme: 'Esomep®, Esomeprazol®, Nexium® IV subst. sèche 40 mg\nEsomeprazol® cpr 20 mg et 40 mg',
-    doseAdulte: [
-      { indication: 'Hémorragie digestive haute / brûlure épigastrique sévère', route: 'IV', dose: '80 mg', note: 'IVL sur 30 min. Objectif : ↑ pH gastrique → diminuer saignement' },
-    ],
+    doseAdulte: [{indication: 'Hémorragie digestive haute / brûlure épigastrique', route: 'IV', dose: '80 mg dilué dans 100 mL', note: 'Faire couler en minimum 3 minutes (HUG BSC 2025)'}],
     dosePed: [],
     ci: ['Hypersensibilité à l\'ésoméprazole / oméprazole', 'Insuffisance hépatique sévère (réduire dose)'],
     se: ['Céphalées', 'Nausées', 'Diarrhée / constipation', 'Hypomagnésémie (usage prolongé)'],
@@ -1417,12 +1311,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antiémétiques (Sétron / Butyrophénone)', cat: 'autre',
     algos: ['Nausées et vomissements adulte et pédiatrique'],
     forme: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL ; 8 mg/4 mL\nOndansétron® cpr pell 4 mg, 8 mg',
-    doseAdulte: [
-      { indication: 'Nausées / vomissements', route: 'IV/PO', dose: 'Ondansétron 4-8 mg\nDropéridol 0.625-1.25 mg', note: 'IVL pour Ondansétron. IV lente pour dropéridol' },
-    ],
-    dosePed: [
-      { indication: 'Nausées (≥ 1 mois)', route: 'IV/PO', dose: 'Ondansétron 0.1 mg/kg (max 4 mg)', note: '' },
-    ],
+    doseAdulte: [{indication: 'Nausées / vomissements', route: 'IVL', dose: '4 mg (max 8 mg)', note: 'Sur 2-5 min. ⚠ Allongement QT — attention autres médicaments QT'}],
+    dosePed: [{indication: 'Nausées / vomissements', route: 'IVL', dose: '0.1 mg/kg (max 4 mg)', note: 'Sur 2-5 min'}],
     ci: ['Ondansétron : maladie de Parkinson, grossesse, allaitement, QT long\nDropéridol : QT long, bradycardie, grossesse, allaitement, amiodarone, méthadone, antipsychotiques, tricycliques'],
     se: ['Ondansétron : syndrome extrapyramidal, allongement QT\nDropéridol : syndrome malin des neuroleptiques (rigidité + hyperthermie + tachycardie)', 'Sédation (dropéridol)'],
     meca: 'Ondansétron : antagoniste 5-HT3 (anti-sérotoninergique) → antiémétique central et périphérique\nDropéridol : antagoniste dopaminergique D2 → antiémétique',
@@ -1435,10 +1325,7 @@ const DEFAULT_DRUGS = [
     classe: 'Butyrophénone — antipsychotique / tranquillisant', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide)', 'Nausées et vomissements'],
     forme: 'Droperidol Sintetica® sol inj 1 mg/2 mL',
-    doseAdulte: [
-      { indication: 'Tranquillisation rapide', route: 'IM', dose: '2.5-5 mg', note: 'Molécule de choix pour la tranquillisation IM. Peut être associé à benzodiazépine' },
-      { indication: 'Antiémétique', route: 'IV', dose: '0.625-1.25 mg', note: 'IVL' },
-    ],
+    doseAdulte: [{indication: 'Nausées / vomissements', route: 'IVL', dose: '0.5 – 1.25 mg', note: 'HUG BSC 2025 : 0.5 mg IV (risque hypotension α-bloquant)'}],
     dosePed: [],
     ci: ['QT long connu', 'Bradycardie < 60/min', 'TAS < 90 mmHg', 'Grossesse / allaitement', 'Amiodarone, moxifloxacine, érythromycine, méthadone, neuroleptiques, tricycliques'],
     se: ['Syndrome malin des neuroleptiques (rigidité + hyperthermie + tachycardie + diaphorèse)', 'Allongement QT / torsades', 'Sédation', 'Syndrome extrapyramidal'],
@@ -1452,9 +1339,7 @@ const DEFAULT_DRUGS = [
     classe: 'Antipsychotique (butyrophénone)', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide)'],
     forme: 'Haldol® sol inj 5 mg/mL IM\nHaldol® gouttes 2 mg/mL\nHaldol® cpr 1 mg et 10 mg',
-    doseAdulte: [
-      { indication: 'État d\'agitation psychotique', route: 'IM', dose: '2.5-5 mg', note: 'Préférer dropéridol ou olanzapine en préhospitalier selon protocole' },
-    ],
+    doseAdulte: [{indication: 'État d\'agitation (< 64 ans)', route: 'IM', dose: '5 mg', note: 'Voie IV interdite. > 64 ans : 2.5 mg IM'}, {indication: 'État d\'agitation (> 64 ans)', route: 'IM', dose: '2.5 mg', note: 'CHUV : 1-2.5 mg IM > 64 ans'}],
     dosePed: [],
     ci: ['QT long', 'Maladie de Parkinson', 'Dépression SNC sévère'],
     se: ['Syndrome extrapyramidal (akathisie, dystonie)', 'Allongement QT', 'Syndrome malin neuroleptiques (rare)'],
@@ -1468,9 +1353,7 @@ const DEFAULT_DRUGS = [
     classe: 'Antipsychotique atypique', cat: 'neuro',
     algos: ['État d\'agitation (tranquillisation rapide PO)'],
     forme: 'Zyprexa®, Olanzapine®, Olanpax® cpr 5, 10, 15, 20 mg\nZyprexa® subst. sèche 10 mg IM',
-    doseAdulte: [
-      { indication: 'Tranquillisation rapide PO (1ère ligne si coopérant)', route: 'PO', dose: '5-10 mg', note: 'Comprimé oro-dispersible. Éviter association IM + benzodiazépine (risque dépression respiratoire)' },
-    ],
+    doseAdulte: [{indication: 'État d\'agitation (1ère ligne si coopérant)', route: 'PO (SL)', dose: '10 mg cpr orodispersible', note: 'HUG : 10 mg SL si prise orale possible. ⚠ NE PAS associer IM + BZD IM'}],
     dosePed: [],
     ci: ['Glaucome à angle fermé', 'QT long connu'],
     se: ['Sédation', 'Hypotension orthostatique', 'Prise de poids (chronique)', 'Syndrome extrapyramidal (rare)'],
@@ -1484,12 +1367,7 @@ const DEFAULT_DRUGS = [
     classe: 'Électrolyte / Anticonvulsivant / Antiarythmique', cat: 'autre',
     algos: ['Prééclampsie / Éclampsie', 'Troubles du rythme (torsades de pointe)', 'Asthme sévère réfractaire'],
     forme: 'Ampoule 10 mL :\n• 10% = 1 g de MgSO4\n• 20% = 2 g de MgSO4\n• 50% = 5 g de MgSO4',
-    doseAdulte: [
-      { indication: 'Prééclampsie sévère — prophylaxie convulsions', route: 'IVL', dose: '4 g ad NaCl 100 mL sur 15-20 min (2 gttes/sec)', note: 'Surveiller TA toutes les 5 min. Si effet indésirable : 1 g gluconate Ca IV' },
-      { indication: 'Éclampsie — traitement convulsions', route: 'IVL/IO', dose: '4 g ad NaCl 100 mL sur 5-10 min (4-6 gttes/sec)', note: 'Convulsions persistantes : 2 g supplémentaires' },
-      { indication: 'Torsades de pointe', route: 'IVL', dose: '1-2 g', note: 'Sur 5-10 min' },
-      { indication: 'Asthme sévère réfractaire', route: 'IVL', dose: '2 g', note: 'Sur 20 min' },
-    ],
+    doseAdulte: [{indication: 'ACR / Torsade de pointe', route: 'IVL/IO', dose: '2 g en 5 min', note: ''}, {indication: 'Asthme aigu grave', route: 'IVL', dose: '2 g dans NaCl 0.9% 100 mL', note: 'Sur 15-20 min'}, {indication: 'Prééclampsie sévère', route: 'IVL', dose: '4 g dans NaCl 0.9% 100 mL', note: 'Sur ≥ 15 min (≥ 2 gttes/sec). Pompe-seringue recommandée'}, {indication: 'Éclampsie (convulsions)', route: 'IVL/IO', dose: '4 g dans NaCl 0.9% 100 mL', note: 'Sur ≥ 5 min. Récidive : 2 g supplémentaires. Dose max 6 g'}],
     dosePed: [],
     ci: ['Bloc auriculo-ventriculaire', 'Myasthénie grave', 'Insuffisance rénale sévère'],
     se: ['Hypotension', 'Bradycardie', 'Dépression respiratoire / arrêt respiratoire (surdosage)', 'Abolition des réflexes ostéotendineux (signe de surdosage)'],
@@ -1504,9 +1382,7 @@ const DEFAULT_DRUGS = [
     classe: 'Ocytocique — hormone utérotonique', cat: 'obst',
     algos: ['Accouchement (délivrance)', 'Hémorragie post-partum primaire'],
     forme: 'Syntocinon® prép inj perf 5 UI/mL\nSyntocinon® spray nasal 40 UI/mL',
-    doseAdulte: [
-      { indication: 'Prévention / Traitement hémorragie post-partum', route: 'IM/IVL', dose: '5 UI IM ou IVL ad NaCl 100 mL sur 5 min', note: 'CI grossesse gémellaire ou multiple — administrer uniquement quand TOUS les bébés sont nés' },
-    ],
+    doseAdulte: [{indication: 'Délivrance / Prévention HPP', route: 'IM ou IVL', dose: '5 UI IM\nou 5 UI ad NaCl 100 mL sur 5 min', note: '⚠ Uniquement quand TOUS les bébés sont nés. ⚠ Pas en IVB direct (hypotension)'}],
     dosePed: [],
     ci: ['Grossesse gémellaire ou multiple (avant expulsion de tous les enfants)', 'Hypertonie utérine', 'État de choc'],
     se: ['Hypotension si IV rapide', 'Tachycardie réflexe', 'Nausées / vomissements', 'Contraction utérine douloureuse'],
@@ -1520,12 +1396,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antihistaminique H1 de 1ère génération', cat: 'autre',
     algos: ['Réaction anaphylactique (traitement complémentaire)'],
     forme: 'Tavegyl® sol inj 2 mg/2 mL\nTavegyl® cpr 1 mg',
-    doseAdulte: [
-      { indication: 'Réaction allergique / anaphylaxie (après adrénaline)', route: 'IV/IO', dose: '2 mg', note: 'IVL lente. Traitement d\'appoint — l\'adrénaline reste le traitement de 1ère ligne' },
-    ],
-    dosePed: [
-      { indication: 'Réaction allergique', route: 'IV', dose: '0.025 mg/kg', note: 'Max 2 mg' },
-    ],
+    doseAdulte: [{indication: 'Réaction allergique / anaphylaxie (après adrénaline)', route: 'IVL/PO', dose: '2 mg dose unique', note: 'Traitement complémentaire — adrénaline IM reste 1ère ligne'}],
+    dosePed: [{indication: 'Réaction allergique', route: 'IV', dose: '0.02 – 0.06 mg/kg (> 1 an)', note: 'PO : 0.5 – 1 mg dès 6 ans'}],
     ci: ['Glaucome à angle fermé', 'Rétention urinaire', 'Grossesse (relatif)'],
     se: ['Somnolence', 'Sécheresse buccale', 'Rétention urinaire', 'Tachycardie', 'Hypotension (IV rapide)'],
     meca: 'Antagoniste H1 → ↓ vasodilatation et perméabilité capillaire → ↓ urticaire et angioœdème. Effet central (sédation). Action lente — pas efficace sur bronchospasme ou choc.',
@@ -1538,12 +1410,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antihistaminique H1 de 1ère génération', cat: 'autre',
     algos: ['Réaction anaphylactique / allergique (traitement complémentaire)'],
     forme: 'Feniallerg® gouttes 1 mg/mL (1 mL = 20 gouttes / 1 gtte = 0.05 mg)\nFenistil® sol inj 4 mg/4 mL',
-    doseAdulte: [
-      { indication: 'Réaction allergique / urticaire / angioœdème', route: 'IV', dose: '4 mg', note: 'IVL lente sur 10-15 min. Traitement complémentaire' },
-    ],
-    dosePed: [
-      { indication: 'Réaction allergique', route: 'IV', dose: '0.1 mg/kg', note: 'Max 4 mg' },
-    ],
+    doseAdulte: [{indication: 'Réaction allergique / prurit', route: 'PO (gouttes)', dose: '20 – 40 gouttes (1-2 mg) 3x/jour', note: '1 mL = 20 gouttes = 1 mg. Uniquement forme orale en adulte'}],
+    dosePed: [{indication: 'Réaction allergique (1 mois – 12 ans)', route: 'PO (gouttes)', dose: '0.1 mg/kg/jour en 3 prises', note: '2 gouttes/kg/jour. Selon poids : voir tableau CORFA'}],
     ci: ['Prématurés et nouveau-nés (risque apnée)', 'Glaucome à angle fermé', 'Rétention urinaire'],
     se: ['Somnolence', 'Sécheresse buccale', 'Tachycardie'],
     meca: 'Idem clémastine — antihistaminique H1 centrale + périphérique.',
@@ -1556,12 +1424,8 @@ const DEFAULT_DRUGS = [
     classe: 'Antibiotique (céphalosporine 3ème génération)', cat: 'autre',
     algos: ['État de choc non traumatique (distributif septique)'],
     forme: 'Ceftriaxon® subst. sèche 0.5 g, 1 g, 2 g\nRocéphine® IV 1 g, 2 g\nRocéphine® IM 1 g (solution IM avec lidocaïne)',
-    doseAdulte: [
-      { indication: 'Sepsis — antibiothérapie empirique préhospitalière', route: 'IV', dose: '2 g', note: 'IVL sur 15-30 min (après hémocultures si possible). Selon protocole et délégation médicale' },
-    ],
-    dosePed: [
-      { indication: 'Sepsis pédiatrique', route: 'IV', dose: '50-100 mg/kg', note: 'Max 2 g. Sur 15-30 min' },
-    ],
+    doseAdulte: [{indication: 'Sepsis / choc septique (après hémocultures)', route: 'IVL', dose: '2 g dilué dans NaCl 0.9% 100 mL', note: 'Ou 2 g IM (2x 1 g dans lidocaïne 1% — 2 sites). Selon délégation médicale'}],
+    dosePed: [{indication: 'Sepsis pédiatrique (après hémocultures)', route: 'IVL', dose: '100 mg/kg dilué dans NaCl 0.9% 50 mL', note: ''}],
     ci: ['Allergie aux céphalosporines et pénicillines (allergie croisée ~10%)', 'Nouveau-nés ictériques (déplace la bilirubine)'],
     se: ['Réaction allergique / anaphylaxie (rare)', 'Troubles GI', 'Phléibite au point d\'injection'],
     meca: 'Inhibe la synthèse du peptidoglycane de la paroi bactérienne → bactéricide. Spectre large gram- et gram+. Pénètre le LCR (méningite).',
@@ -1574,12 +1438,8 @@ const DEFAULT_DRUGS = [
     classe: 'Sympathicomimétique mixte', cat: 'cardiaque',
     algos: ['Hypotension per-induction / anesthésie'],
     forme: 'Éphédrine® 50 mg/10 mL ; 50 mg/mL',
-    doseAdulte: [
-      { indication: 'Hypotension (ISR / anesthésie)', route: 'IV', dose: '3-9 mg en bolus', note: 'Titration. Répéter si nécessaire' },
-    ],
-    dosePed: [
-      { indication: 'Hypotension per-induction', route: 'IV', dose: '0.1-0.2 mg/kg', note: '' },
-    ],
+    doseAdulte: [{indication: 'Hypotension per-induction / ISR', route: 'IV', dose: '5 – 10 mg', note: 'Répéter jusqu\'à obtention de la TA cible'}],
+    dosePed: [],
     ci: ['HTA non contrôlée', 'Glaucome à angle fermé', 'Tachycardie'],
     se: ['Tachycardie', 'HTA', 'Arythmies', 'Anxiété / insomnie', 'Tachyphylaxie (répétitions)'],
     meca: 'Libère les catécholamines endogènes (indirect) + agonisme α et β direct → ↑ PA, FC. Durée d\'action plus longue qu\'adrénaline.',
@@ -1589,10 +1449,88 @@ const DEFAULT_DRUGS = [
   },
 ];
 
-let drugs = JSON.parse(localStorage.getItem('corfaDrugs') || 'null') || DEFAULT_DRUGS;
+let drugs = [];
+let _firestoreLoaded = false;
 
-function saveData() {
-  localStorage.setItem('corfaDrugs', JSON.stringify(drugs));
+// ============ FIREBASE DATA ============
+async function loadFromFirestore() {
+  try {
+    const { getDocs } = window._firestore;
+    const snapshot = await getDocs(window._col);
+    if (!snapshot.empty) {
+      drugs = [];
+      snapshot.forEach(d => drugs.push(d.data()));
+      drugs.sort((a,b) => a.name.localeCompare(b.name));
+      console.log('Loaded', drugs.length, 'drugs from Firestore');
+    } else {
+      // First time: push DEFAULT_DRUGS to Firestore
+      console.log('Firestore empty — seeding with default data...');
+      drugs = DEFAULT_DRUGS;
+      await seedFirestore();
+    }
+    _firestoreLoaded = true;
+    buildSidebar();
+    updateStats();
+  } catch(e) {
+    console.error('Firestore load error:', e);
+    // Fallback to local
+    drugs = JSON.parse(localStorage.getItem('corfaDrugs') || 'null') || DEFAULT_DRUGS;
+    _firestoreLoaded = false;
+    buildSidebar();
+    updateStats();
+  }
+}
+
+async function seedFirestore() {
+  try {
+    const { setDoc, doc } = window._firestore;
+    for (const drug of DEFAULT_DRUGS) {
+      await setDoc(doc(window._db, 'drugs', drug.id), drug);
+    }
+    console.log('Seeded', DEFAULT_DRUGS.length, 'drugs to Firestore');
+  } catch(e) {
+    console.error('Seed error:', e);
+  }
+}
+
+async function saveData() {
+  if (_firestoreLoaded && isAdmin) {
+    // Save to Firestore (handled per drug in saveDrug/deleteDrug)
+  } else {
+    localStorage.setItem('corfaDrugs', JSON.stringify(drugs));
+  }
+}
+
+async function saveOneDrug(drug) {
+  if (_firestoreLoaded) {
+    try {
+      const { setDoc, doc } = window._firestore;
+      await setDoc(doc(window._db, 'drugs', drug.id), drug);
+    } catch(e) {
+      console.error('Save drug error:', e);
+      showToast('Erreur sauvegarde Firebase');
+    }
+  }
+  // Also update local array
+  const idx = drugs.findIndex(x => x.id === drug.id);
+  if (idx >= 0) drugs[idx] = drug; else drugs.push(drug);
+}
+
+async function deleteOneDrug(id) {
+  if (_firestoreLoaded) {
+    try {
+      const { deleteDoc, doc } = window._firestore;
+      await deleteDoc(doc(window._db, 'drugs', id));
+    } catch(e) {
+      console.error('Delete drug error:', e);
+      showToast('Erreur suppression Firebase');
+    }
+  }
+  drugs = drugs.filter(x => x.id !== id);
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = drugs.length;
 }
 
 // ============ SIDEBAR ============
@@ -1815,17 +1753,13 @@ function saveDrug() {
     drug.pk = { debut: (pkParts[0]||'').trim(), duree: (pkParts[1]||'').trim(), demivie: (pkParts[2]||'').trim() };
   }
 
-  if (id) {
-    const idx = drugs.findIndex(x => x.id === id);
-    if (idx >= 0) drugs[idx] = drug;
-  } else {
-    drugs.push(drug);
-  }
-  saveData();
-  buildSidebar();
-  buildAdminDrugList();
-  clearAdminForm();
-  showToast('Fiche sauvegardée');
+  saveOneDrug(drug).then(() => {
+    buildSidebar();
+    buildAdminDrugList();
+    clearAdminForm();
+    showToast('Fiche sauvegardée');
+    if (currentDrugId === drug.id) showDrug(drug.id);
+  });
 }
 
 function editDrug(id) {
@@ -1857,12 +1791,12 @@ function editDrug(id) {
 
 function deleteDrug(id) {
   if (!confirm('Supprimer cette fiche ?')) return;
-  drugs = drugs.filter(x => x.id !== id);
-  saveData();
-  buildSidebar();
-  buildAdminDrugList();
-  if (currentDrugId === id) showHome();
-  showToast('Fiche supprimée');
+  deleteOneDrug(id).then(() => {
+    buildSidebar();
+    buildAdminDrugList();
+    if (currentDrugId === id) showHome();
+    showToast('Fiche supprimée');
+  });
 }
 
 function clearAdminForm() {
@@ -1884,8 +1818,17 @@ function importData(input) {
     try {
       const data = JSON.parse(e.target.result);
       if (!Array.isArray(data)) throw new Error('Format invalide');
-      drugs = data; saveData(); buildSidebar(); buildAdminDrugList();
-      showToast('Import réussi — ' + data.length + ' fiches');
+      drugs = data;
+      if (_firestoreLoaded && isAdmin) {
+        // Push all to Firestore
+        Promise.all(data.map(d => saveOneDrug(d))).then(() => {
+          buildSidebar(); buildAdminDrugList();
+          showToast('Import réussi — ' + data.length + ' fiches synchronisées');
+        });
+      } else {
+        saveData(); buildSidebar(); buildAdminDrugList();
+        showToast('Import réussi — ' + data.length + ' fiches');
+      }
     } catch { alert('Fichier JSON invalide.'); }
   };
   reader.readAsText(file);
@@ -1902,11 +1845,26 @@ function showToast(msg) {
 // ============ INIT ============
 function initApp() {
   buildSidebar();
-  document.getElementById('statTotal').textContent = drugs.length;
+  updateStats();
   document.getElementById('statCats').textContent = '8';
 }
 
-// Lancement direct sans login
+// Firebase init — wait for module to load
+window.addEventListener('firebaseReady', () => {
+  loadFromFirestore();
+});
+
+// Fallback if Firebase takes too long or fails
+setTimeout(() => {
+  if (drugs.length === 0) {
+    console.warn('Firebase timeout — using DEFAULT_DRUGS');
+    drugs = DEFAULT_DRUGS;
+    buildSidebar();
+    updateStats();
+  }
+}, 5000);
+
+// Start basic UI immediately
 initApp();
 </script>
 </body>
