@@ -470,8 +470,7 @@
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyCuaC-jsubhLTfeYCqhbXKmibkjggPXBJY",
@@ -484,16 +483,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    // Expose to global scope for use in main script
     window._db = db;
-    window._auth = auth;
     window._col = collection(db, 'drugs');
-    window._firestore = { collection, getDocs, setDoc, deleteDoc, doc, onSnapshot };
+    window._firestore = { collection, getDocs, setDoc, deleteDoc, doc };
     window._firebaseReady = true;
-
-    // Notify main script
     window.dispatchEvent(new Event('firebaseReady'));
   </script>
 </head>
@@ -509,7 +503,7 @@
     </div>
     <div class="fieldGroup">
       <label>Identifiant</label>
-      <input type="email" id="loginUser" placeholder="Email administrateur" autocomplete="email">
+      <input type="text" id="loginUser" placeholder="Identifiant" autocomplete="username">
     </div>
     <div class="fieldGroup">
       <label>Mot de passe</label>
@@ -680,7 +674,9 @@
 </div>
 
 <script>
-// ============ AUTH (Firebase Auth) ============
+// ============ AUTH ============
+const ADMIN_USER = 'CORFA';
+const ADMIN_PASS = 'CORFA';
 let isAdmin = false;
 
 function openLoginModal() {
@@ -696,30 +692,18 @@ function closeLoginModal() {
 }
 
 function doLogin() {
-  const email = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
   document.getElementById('loginErr').textContent = '';
-  if (!email || !pass) {
-    document.getElementById('loginErr').textContent = 'Veuillez remplir tous les champs.';
-    return;
-  }
-  // Try Firebase Auth
-  if (window._auth) {
-    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js').then(({ signInWithEmailAndPassword }) => {
-      signInWithEmailAndPassword(window._auth, email, pass)
-        .then(() => {
-          isAdmin = true;
-          closeLoginModal();
-          setAdminUI(true);
-          showToast('Connecté en tant qu\'Admin');
-          toggleAdmin();
-        })
-        .catch(err => {
-          document.getElementById('loginErr').textContent = 'Identifiants incorrects.';
-        });
-    });
+  if (!u || !p) { document.getElementById('loginErr').textContent = 'Veuillez remplir tous les champs.'; return; }
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    isAdmin = true;
+    closeLoginModal();
+    setAdminUI(true);
+    showToast('Connecté en tant qu\'Admin');
+    toggleAdmin();
   } else {
-    document.getElementById('loginErr').textContent = 'Firebase non disponible.';
+    document.getElementById('loginErr').textContent = 'Identifiants incorrects.';
   }
 }
 
@@ -739,17 +723,11 @@ document.addEventListener('keydown', e => {
 });
 
 function logout() {
-  if (window._auth) {
-    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js').then(({ signOut }) => {
-      signOut(window._auth).then(() => {
-        isAdmin = false;
-        setAdminUI(false);
-        document.getElementById('adminPanel').classList.remove('visible');
-        showHome();
-        showToast('Déconnecté');
-      });
-    });
-  }
+  isAdmin = false;
+  setAdminUI(false);
+  document.getElementById('adminPanel').classList.remove('visible');
+  showHome();
+  showToast('Déconnecté');
 }
 
 // ============ DATA ============
@@ -1502,18 +1480,19 @@ async function saveData() {
 }
 
 async function saveOneDrug(drug) {
+  // Update local array first
+  const idx = drugs.findIndex(x => x.id === drug.id);
+  if (idx >= 0) drugs[idx] = drug; else drugs.push(drug);
+  // Save to Firestore if available
   if (_firestoreLoaded) {
     try {
       const { setDoc, doc } = window._firestore;
       await setDoc(doc(window._db, 'drugs', drug.id), drug);
     } catch(e) {
       console.error('Save drug error:', e);
-      showToast('Erreur sauvegarde Firebase');
+      showToast('Erreur sauvegarde — vérifier connexion');
     }
   }
-  // Also update local array
-  const idx = drugs.findIndex(x => x.id === drug.id);
-  if (idx >= 0) drugs[idx] = drug; else drugs.push(drug);
 }
 
 async function deleteOneDrug(id) {
