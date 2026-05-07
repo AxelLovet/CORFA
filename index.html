@@ -192,7 +192,10 @@
   /* Top bar mobile */
   .topBar {
     display: none;
-    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: 12px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
     background: var(--bg2);
     border-bottom: 1px solid var(--border2);
     align-items: center; gap: 12px;
