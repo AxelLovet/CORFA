@@ -531,7 +531,7 @@
         CORFA
         <span id="adminBadge" class="adminBadge" style="display:none">Admin</span>
       </div>
-      <div class="version">Pharmacologie v4.0 · 2025</div>
+      <div class="version">Pharmacologie v4.1.2 · 2026</div>
     </div>
     <div class="searchBox">
       <div class="searchWrap">
@@ -566,7 +566,7 @@
       <div class="homeStats">
         <div class="homeStat"><div class="num" id="statTotal">0</div><div class="lbl">Médicaments</div></div>
         <div class="homeStat"><div class="num" id="statCats">0</div><div class="lbl">Catégories</div></div>
-        <div class="homeStat"><div class="num">v4.0</div><div class="lbl">Version CORFA</div></div>
+        <div class="homeStat"><div class="num">v4.1.2</div><div class="lbl">Version CORFA</div></div>
       </div>
     </div>
 
@@ -734,10 +734,10 @@ function logout() {
 const DEFAULT_DRUGS = [
   // ===== CARDIOVASCULAIRE =====
   {
-    id: 'adrenaline', name: 'Adrénaline', commercial: 'Epinephrine, EpiPen®',
+    id: 'adrenaline', name: 'Adrénaline', commercial: 'Adrénaline Aguettant® 1mg/10mL ; 5mg/5mL\nAdrénaline Amino® 0.5mg/mL ; 1mg/1mL\nAdrénaline Sintetica® 1mg/mL\nAdrénaline Bichsel® 1mg/10mL ; 2.5mg/5mL\nEpipen® 0.3mg inj préremplie',
     classe: 'Sympathicomimétique (catécholamine)', cat: 'cardiaque',
     algos: ['ACR', 'Retour à la circulation spontanée', 'Réaction anaphylactique', 'État de choc', 'Traumatisme médullaire', 'Détresse respiratoire pédiatrique'],
-    forme: 'Adrénaline 5 mg/5 mL ; 1 mg/10 mL ; 10 mg/10 mL',
+    forme: 'Adrénaline Aguettant® : 1 mg/10 mL ; 5 mg/5 mL\nAdrénaline Amino® : 0.5 mg/mL ; 1 mg/1 mL\nAdrénaline Sintetica® : 1 mg/mL\nAdrénaline Bichsel® : 1 mg/10 mL ; 2.5 mg/5 mL\nEpipen® 0.3 mg inj préremp',
     doseAdulte: [{indication: 'ACR (Asystolie / FV / TV)', route: 'IV/IO bolus', dose: '1 mg', note: 'Répéter toutes les 3-5 min'}, {indication: 'Trouble du rythme / État de choc septique / Traumatisme médullaire / ROSC', route: 'IV/IO', dose: 'Titration 0.01 – 0.1 mg', note: 'Toutes les 3-5 min'}, {indication: 'Choc anaphylactique', route: 'IM', dose: '0.3 – 0.5 mg', note: 'Face antéro-externe de la cuisse. Répéter aux 10 min si besoin'}, {indication: 'Choc anaphylactique (titration IV)', route: 'IV/IO', dose: '0.01 – 0.1 mg', note: 'Titration toutes les 3-5 min'}, {indication: 'Nébulisation bronchospasme anaphylactique', route: 'NEB', dose: '1 – 3 mg ad 5 mL NaCl 0.9%', note: ''}],
     dosePed: [{indication: 'ACR', route: 'IV/IO bolus', dose: '0.01 mg/kg', note: 'Toutes les 3-5 min (max 1 mg)'}, {indication: 'Choc anaphylactique', route: 'IM', dose: '< 30 kg : 0.15 mg\n> 30 kg : 0.3 mg', note: 'Face antéro-externe de la cuisse'}, {indication: 'Choc anaphylactique (titration IV)', route: 'IV/IO', dose: '0.001 mg/kg', note: 'Titration'}, {indication: 'Faux-croup / stridor sévère (nébulisation)', route: 'NEB', dose: '4 mg ad 5 mL NaCl 0.9%', note: 'Selon algorithme détresse respiratoire pédiatrique'}],
     ci: ['Hypertension sévère', 'Glaucome à angle fermé', 'Tachycardie paroxystique', 'Coronaropathie sévère', '⚠ Ces CI sont relatives si indication vitale (ACR, anaphylaxie)'],
@@ -804,10 +804,10 @@ const DEFAULT_DRUGS = [
     surdosage: 'Bradycardie sévère, hypotension, bronchospasme. Antidote : Glucagon 1 mg IV, atropine, isoprénaline.'
   },
   {
-    id: 'lidocaine', name: 'Lidocaïne', commercial: 'Lidocaïne 1%® 10 mg/mL amp 10 mL',
+    id: 'lidocaine', name: 'Lidocaïne', commercial: 'Lidocaïne Bichsel® 1% 100mg/10mL\nLidocaïne Streuli® / Xylesine® / Rapidocain®',
     classe: 'Antiarythmique classe Ib / anesthésique local', cat: 'cardiaque',
     algos: ['ACR (alternative amiodarone)', 'Troubles du rythme'],
-    forme: 'Lidocaïne 1%® 10 mg/mL — ampoule de 10 mL',
+    forme: 'Lidocaïne Bichsel® 0.5% 50mg/10mL\nLidocaïne Bichsel® 1% 50mg/5mL ; 100mg/10mL\nLidocaïne Bichsel® 2% 200mg/10mL\nLidocaïne Streuli® / Xylesine® 1g/50mL ; 20mg/2mL ; 40mg/2mL ; 100mg/10mL\nRapidocain® Cardio 2% 100mg/5mL',
     doseAdulte: [{indication: 'ACR (FV/TV) — 1ère dose', route: 'IV/IO', dose: '1.0 – 1.5 mg/kg', note: ''}, {indication: 'ACR (FV/TV) — 2e et 3e dose', route: 'IV/IO', dose: '0.5 – 0.75 mg/kg', note: ''}],
     dosePed: [{indication: 'ACR (FV/TV)', route: 'IV/IO', dose: '1 mg/kg dose unique', note: ''}],
     ci: ['Allergie aux anesthésiques de type amide', 'Bloc AV complet', 'Syndrome de Stokes-Adams'],
@@ -818,10 +818,10 @@ const DEFAULT_DRUGS = [
     surdosage: 'Convulsions, dépression cardiaque, coma. Traitement symptomatique + intralipide 20%.'
   },
   {
-    id: 'noradrenaline', name: 'Noradrénaline', commercial: 'Noradrénaline Sintetica® 0.1 mg/mL (= 100 µg/mL) fiole 50 mL',
+    id: 'noradrenaline', name: 'Noradrénaline', commercial: 'Noradrénalin Sintetica® 1 mg/mL\nNoradrénalin Sintetica® sol perf 3-10 mg/50 mL',
     classe: 'Catécholamine — vasopresseur', cat: 'cardiaque',
     algos: ['État de choc (vasopresseur)', 'Retour à la circulation spontanée'],
-    forme: 'Noradrénaline Sintetica® 0.1 mg/mL (= 100 µg/mL) — fiole 50 mL = 5 mg',
+    forme: 'Noradrénalin Sintetica® 1 mg/mL (amp 1mL, 4mL, 10mL)\nNoradrénalin Sintetica® sol perf 3mg/50mL ; 5mg/50mL ; 6mg/50mL ; 10mg/50mL\nNoradrénalin Sintetica® ultra 0.5mg/50mL ; 1mg/50mL',
     doseAdulte: [{indication: 'Choc distributif / septique (TAM cible > 65 mmHg)', route: 'IV PSE', dose: '0.01 – 0.1 µg/kg/min en dose initiale', note: 'Concentration 100 µg/mL : 70 kg → débuter 0.4-4.2 mL/h\n1 mL/h = 1.7 µg/min'}],
     dosePed: [{indication: 'Choc septique', route: 'IV PSE', dose: '0.05 – 2 µg/kg/min', note: 'En titration'}],
     ci: ['Hypovolémie non corrigée', 'Ischémie vasculaire périphérique sévère'],
@@ -832,10 +832,10 @@ const DEFAULT_DRUGS = [
     surdosage: 'HTA sévère, ischémie. Arrêter la perfusion.'
   },
   {
-    id: 'nitroglycérine', name: 'Nitroglycérine', commercial: 'Isoket spray® (dinitrate isosorbide) 1.25 mg/dose\nNitroglycerin Streuli® cpr 0.8 mg\nPerlinganit® IV amp 10 mg/10 mL',
+    id: 'nitroglycérine', name: 'Nitroglycérine', commercial: 'Isoket spray® 1.25mg/push\nNitroglycerin Streuli® caps 0.8mg\nNitrolingual® pompe spray\nNitroglycerin Sintética® sol perf 1mg/10mL ; 50mg/50mL\nDéponit® patch 5mg/24h ; 10mg/24h',
     classe: 'Dérivé nitré — vasodilatateur', cat: 'cardiaque',
     algos: ['Douleurs thoraciques (SCA)', 'Troubles respiratoires (OAP)'],
-    forme: 'Isoket spray® — principe actif : dinitrate d\'isosorbide\n1 jet = 0.05 mL = 1.25 mg de dinitrate d\'isosorbide\nNitroglycerin Streuli® cpr 0.8 mg de trinitrate de glycérol\nPerlinganit® IV amp 10 mL (10 mg) et 50 mL (50 mg)',
+    forme: 'Isoket spray® (dinitrate d\'isosorbide) 1 push = 1.25 mg\nNitroglycerin Streuli® caps croquer 0.8 mg\nNitrolingual® pompe spray\nNitroglycerin Sintética® sol perf 1mg/10mL et 50mg/50mL\nDéponit® patch 5mg/24h et 10mg/24h\nNitriderm® TTS 5mg/24h et 10mg/24h',
     doseAdulte: [{indication: 'Angor / SCA (EVA > 3, TAS > 90 mmHg)', route: 'SL', dose: '1 push Isoket (1.25 mg)\nou 1 cp Nitroglycerin Streuli (0.8 mg)', note: 'Répéter toutes les 3-5 min si TAS > 90 mmHg. Max 3 prises'}, {indication: 'OAP (TAS > 140 mmHg)', route: 'SL', dose: '1 push ou 1 cp', note: 'Répéter toutes les 3-5 min si TAS > 140 mmHg'}, {indication: 'OAP sévère IV', route: 'IV (PSE)', dose: 'Perlinganit® — titration selon protocole', note: 'TAS cible selon protocole'}],
     dosePed: [],
     ci: ['TAS < 90 mmHg', 'Prise d\'inhibiteur PDE5 (sildenafil, tadalafil, vardenafil — suffixe "-afil") dans les 48 h ⚠', 'Bradycardie < 50/min', 'Sus-décalage ST en II, III, aVF (SCD) → ajouter précordiales droites, si sus-décalage > 1 mm V3R-V4R : CONTRE-INDIQUÉ'],
@@ -902,10 +902,10 @@ const DEFAULT_DRUGS = [
     surdosage: 'Saignements. Pas d\'antidote spécifique. Transfusion plaquettaire si nécessaire.'
   },
   {
-    id: 'prasugrel', name: 'Prasugrel', commercial: 'Efient® cp pell 10 mg',
+    id: 'prasugrel', name: 'Prasugrel', commercial: 'Efient® cpr pell 5 mg et 10 mg',
     classe: 'Antiagrégant plaquettaire (inhibiteur P2Y12)', cat: 'hemostase',
     algos: ['Douleurs thoraciques (STEMI) — selon protocole'],
-    forme: 'Efient® cp pell 10 mg de prasugrel',
+    forme: 'Efient® cpr pell 5 mg et 10 mg\nPrasugrel Mepha® Lactab 5 mg et 10 mg\nPrasugrel Spirig HC® Lactab 5 mg et 10 mg',
     doseAdulte: [{indication: 'STEMI — dose de charge', route: 'PO', dose: '60 mg dose unique', note: 'Selon procédure STEMI et instruction médicale'}],
     dosePed: [],
     ci: ['Antécédent AVC / AIT', 'Âge > 75 ans (risque bénéfice défavorable)', 'Poids < 60 kg (dose réduite)', 'Saignement actif', 'Insuffisance hépatique sévère'],
@@ -921,7 +921,7 @@ const DEFAULT_DRUGS = [
     classe: 'Opioïde de synthèse — agoniste µ (analgésique central)', cat: 'analgesique',
     algos: ['Antalgie traumatique', 'Antalgie non traumatique', 'Douleurs thoraciques (SCA)', 'ISR (prémédication)'],
     forme: 'Fentanyl® 100 mcg/2 mL IV/IM ; 500 mcg/10 mL IV/IM\nDurogesic® patch 12 mcg/h, 25 mcg/h, 50 mcg/h, 75 mcg/h, 100 mcg/h\nActiq®, Effentora® cpr 200-1600 mcg',
-    doseAdulte: [{indication: 'Antalgie (EVA > 3)', route: 'IV/IN', dose: 'Charge : 1 µg/kg\nTitration : bolus 0.25 – 0.5 µg/kg (poids idéal)', note: 'Max 3-4 µg/kg total (HUG : max 5 µg/kg)'}, {indication: 'SCA / STEMI', route: 'IV/IN', dose: '1 – 3 µg/kg', note: 'Max 3 µg/kg'}, {indication: 'ISR (prémédication)', route: 'IV', dose: '0.5 – 1.5 µg/kg', note: ''}],
+    doseAdulte: [{indication: 'Antalgie (EVA > 3)', route: 'IV/IN', dose: 'Charge : 1 µg/kg\nTitration : bolus 0.25 – 0.5 µg/kg (poids idéal)', note: 'Max 3-4 µg/kg total (HUG : max 5 µg/kg)'}, {indication: 'SCA / STEMI', route: 'IV/IN', dose: '1 – 3 µg/kg', note: 'Max 3 µg/kg'}, {indication: 'ISR (prémédication)', route: 'IV', dose: '1 – 2 µg/kg', note: ''}],
     dosePed: [{indication: 'Antalgie', route: 'IV/IN', dose: 'Charge : 1 µg/kg\nTitration : 0.5 µg/kg', note: 'Max 3 µg/kg total'}],
     ci: ['Allergie aux opioïdes', 'FR < 10/min (adulte)', 'TAS < 90 mmHg', '⚠ Prudence si ISRS / IMAO (risque syndrome sérotoninergique)'],
     se: ['Dépression respiratoire (dose-dépendante)', 'Nausées / vomissements', 'Bradycardie', 'Rigidité thoracique (injection rapide)', 'Hypotension'],
@@ -1219,7 +1219,7 @@ const DEFAULT_DRUGS = [
     algos: ['Troubles de la conscience (hypoglycémie)', 'Retour à la circulation spontanée'],
     forme: 'Glucose® sol inj amp 10 mL : 5% / 10% / 20% / 40%\n• 1 mL G5% = 50 mg glucose\n• 1 mL G10% = 100 mg glucose\n• 1 mL G20% = 200 mg glucose\n• 1 mL G40% = 400 mg glucose\nGlucose® sol perf 5% / 10% / 20% flacon 100-1000 mL',
     doseAdulte: [{indication: 'Hypoglycémie < 4 mmol/L — PO (si déglutition conservée)', route: 'PO', dose: '16 – 20 g (4-5 morceaux sucre)', note: ''}, {indication: 'Hypoglycémie < 4 mmol/L — IV', route: 'IVL', dose: '16 – 20 g IV lent (1-2 min)', note: 'HUG : 16 g IV (amp 4 g/10 mL), à répéter. But HGT > 4 mmol/L'}],
-    dosePed: [{indication: 'Hypoglycémie < 4 mmol/L', route: 'PO/IV/IO', dose: '0.4 g/kg\n= G20% 2 mL/kg', note: ''}],
+    dosePed: [{indication: 'Hypoglycémie < 4 mmol/L', route: 'PO/IV/IO', dose: '0.2 g/kg\n= G20% 1 mL/kg\n= G10% 2 mL/kg', note: 'ERC 2025 : 0.2g/kg à répéter si nécessaire'}],
     ci: ['Hyperglycémie (sauf si hypoglycémie confirmée)', 'Extravasation (nécrose tissulaire avec G50%)'],
     se: ['Hyperglycémie de rebond', 'Thrombophlébite (concentrations élevées)', 'Surcharge hydrique (G5%)'],
     meca: 'Apport direct de glucose → correction de l\'hypoglycémie → normalisation de la glycémie → restauration du métabolisme cérébral.',
@@ -1285,18 +1285,18 @@ const DEFAULT_DRUGS = [
     surdosage: 'Peu de toxicité. Symptômes GI. Traitement symptomatique.'
   },
   {
-    id: 'nausees', name: 'Antiémétiques (Ondansétron / Dropéridol)', commercial: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL, 8 mg/4 mL',
-    classe: 'Antiémétiques (Sétron / Butyrophénone)', cat: 'autre',
-    algos: ['Nausées et vomissements adulte et pédiatrique'],
-    forme: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL ; 8 mg/4 mL\nOndansétron® cpr pell 4 mg, 8 mg',
+    id: 'nausees', name: 'Ondansétron', commercial: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL ; 8 mg/4 mL\nOndansétron® cpr pell 4 mg ; 8 mg',
+    classe: 'Antagoniste des récepteurs 5-HT3 — antiémétique', cat: 'autre',
+    algos: ['Nausées et vomissements'],
+    forme: 'Ondansétron®, Zofran® conc perf 4 mg/2 mL ; 8 mg/4 mL\nOndansétron® cpr pell 4 mg ; 8 mg',
     doseAdulte: [{indication: 'Nausées / vomissements', route: 'IVL', dose: '4 mg (max 8 mg)', note: 'Sur 2-5 min. ⚠ Allongement QT — attention autres médicaments QT'}],
     dosePed: [{indication: 'Nausées / vomissements', route: 'IVL', dose: '0.1 mg/kg (max 4 mg)', note: 'Sur 2-5 min'}],
-    ci: ['Ondansétron : maladie de Parkinson, grossesse, allaitement, QT long\nDropéridol : QT long, bradycardie, grossesse, allaitement, amiodarone, méthadone, antipsychotiques, tricycliques'],
-    se: ['Ondansétron : syndrome extrapyramidal, allongement QT\nDropéridol : syndrome malin des neuroleptiques (rigidité + hyperthermie + tachycardie)', 'Sédation (dropéridol)'],
-    meca: 'Ondansétron : antagoniste 5-HT3 (anti-sérotoninergique) → antiémétique central et périphérique\nDropéridol : antagoniste dopaminergique D2 → antiémétique',
-    pk: { debut: '15-30 min (IV)', duree: '4-8 h (ondansétron)\n4-12 h (dropéridol)', demivie: '3-5 h' },
-    alertes: ['Dropéridol — Syndrome malin des neuroleptiques : rigidité + hyperthermie + tachycardie + altération conscience + diaphorèse → médicalisaion impérative', '⚠ Dropéridol : CI allongement QT, amiodarone, méthadone, neuroleptiques, tricycliques'],
-    surdosage: 'Dropéridol : syndrome malin neuroleptiques. Ondansétron : allongement QT / arythmies.'
+    ci: ['Allongement QT connu', 'Grossesse / allaitement', 'Maladie de Parkinson'],
+    se: ['Allongement QT (dose-dépendant)', 'Céphalées', 'Constipation', 'Syndrome extrapyramidal (rare)'],
+    meca: 'Antagoniste sélectif des récepteurs 5-HT3 → blocage des récepteurs sérotoninergiques centraux (area postrema) et périphériques → effet antiémétique puissant. Pas d\'effet sur les récepteurs dopaminergiques ou muscariniques.',
+    pk: { debut: '15-30 min (IV)', duree: '4-8 h', demivie: '3-5 h' },
+    alertes: ['⚠ Allongement QT → surveiller ECG si association avec autres médicaments allongeant le QT', 'Pas d\'effet sur les récepteurs dopaminergiques → pas de syndrome extrapyramidal classique'],
+    surdosage: 'Allongement QT / arythmies. Traitement symptomatique.'
   },
   {
     id: 'droperidol', name: 'Dropéridol', commercial: 'Droperidol Sintetica® sol inj 1 mg/2 mL',
@@ -1412,10 +1412,10 @@ const DEFAULT_DRUGS = [
     surdosage: 'Peu de toxicité directe. Convulsions (doses très élevées). Traitement symptomatique.'
   },
   {
-    id: 'ephedrine', name: 'Éphédrine', commercial: 'Éphédrine® 50 mg/10 mL, 50 mg/mL',
+    id: 'ephedrine', name: 'Éphédrine', commercial: 'Ephédrine Aguettant® 30 mg/10 mL\nEphédrine Amino® 50 mg/mL\nEphédrine Sintetica® 50 mg/5 mL\nEphédrine Streuli® 50 mg/mL\nEphédrine HCL Bichsel® 25 mg/5 mL',
     classe: 'Sympathicomimétique mixte', cat: 'cardiaque',
     algos: ['Hypotension per-induction / anesthésie'],
-    forme: 'Éphédrine® 50 mg/10 mL ; 50 mg/mL',
+    forme: 'Ephédrine Aguettant® 30 mg/10 mL\nEphédrine Amino® sol inj 50 mg/mL ; 50 mg/10 mL flacon\nEphédrine Sintetica® sol inj 50 mg/5 mL\nEphédrine Streuli® sol inj 50 mg/mL\nEphédrine HCL Bichsel® 25 mg/5 mL',
     doseAdulte: [{indication: 'Hypotension per-induction / ISR', route: 'IV', dose: '5 – 10 mg', note: 'Répéter jusqu\'à obtention de la TA cible'}],
     dosePed: [],
     ci: ['HTA non contrôlée', 'Glaucome à angle fermé', 'Tachycardie'],
