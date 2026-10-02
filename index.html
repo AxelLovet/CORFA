@@ -1906,14 +1906,6 @@ function toggleSection(id) {
 }
 
 // ============ HOME ============
-function showHome() {
-  document.getElementById('homeScreen').style.display = 'flex';
-  document.getElementById('drugView').style.display = 'none';
-  document.getElementById('adminPanel').classList.remove('visible');
-  document.querySelectorAll('.drugItem').forEach(el => el.classList.remove('active'));
-  currentDrugId = null;
-}
-
 // ============ MOBILE ============
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');
